@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Implementation-Title: Tess4J - Tesseract for Java
+Implementation-Version: 4.0.0
+Archiver-Version: Plexus Archiver
+Built-By: Quan
+Specification-Vendor: Tess4J
+Specification-Title: Tess4J - Tesseract for Java
+Implementation-Vendor-Id: net.sourceforge.tess4j
+Implementation-Vendor: Tess4J
+Created-By: Apache Maven 3.5.2
+Build-Jdk: 1.8.0_171
+Specification-Version: 4.0.0
+Implementation-URL: http://tess4j.sourceforge.net
+
+Name: Build-Information
+Java-Vendor: Oracle Corporation
+Os-Name: Windows 10
+Java-Version: 1.8.0_171
+
