@@ -20,136 +20,250 @@ import org.apache.log4j.Level;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 
-public class ScanPdfToText {
+public class ScanPdfToText
+{
 
-	static Scanner scanner = new Scanner(System.in);
-	public static Properties properties = new Properties();
-	public static String all_files_path = null;
-	public static String pngExtentension = ".png";
-	public static String pdfExtentension = ".pdf";
-	public static String jpegExtentension = ".jpeg | jpg";
-	public static String txtExtension = ".txt";
-	public static int filefoundCount = 0;
-	public static String defaultOutPutPath = null;
-	public static List<String> fileList = new ArrayList<>();
-	public static int maxDepthFromUser = 0;
-	public static int folderCount = 0;
-	public static int FolderAvailableCount = 0;
-	public static Set<String> uniqueFiles = new HashSet<>();
-	public static int folderIterationNum = 20;
+	static Scanner				scanner				= new Scanner(System.in);
+	public static Properties	properties			= new Properties();
+	public static String		all_files_path		= null;
+	public static String		pngExtentension		= ".png";
+	public static String		pdfExtentension		= ".pdf";
+	public static String		txtExtension		= ".txt";
+	public static String		bothExtensionName	= "pdf and txt";
+	public static String		defaultOutPutPath	= null;
+	public static List<String>	fileList			= new ArrayList<>();
+	public static int			maxDepthFromUser	= 0;
+	public static Set<String>	uniqueFiles			= new HashSet<>();
+	public static List<String>	allFileList			= new ArrayList<>();
+	public static List<String>	pdfFileList			= new ArrayList<>();
+	public static List<String>	pngFileList			= new ArrayList<>();
 
-	public static BothPDFAndPNG both_PDF_and_PNG = new BothPDFAndPNG();
-	public static PDF pdf = new PDF();
-	public static PNG png = new PNG();
-	private static String txtFilePath2;
-
-	public static void main(String[] args) {
-		takenInfoFromUser();
+	public static void main(String[] args)
+	{
+		boolean loadProperties = loadProperties();
+		if (loadProperties == true)
+		{
+			choiceForUser();
+		}
 	}
 
-	private static void takenInfoFromUser() {
-		try {
-			MyLogger.myLoggerr.info("Option {1. PDF to txt }, {2. png to txt}, {3. for both (png & pdf to txt)}");
+	private static void choiceForUser()
+	{
+		try
+		{
+			MyLogger.myLoggerr.info("Select any Option from following list\n" + "1. Convert PDF to txt \n"
+					+ "2. Convert png to txt\n" + "3. Convert all");
 
-			int uNum = scanner.nextInt();
-			int numForCallSetFileListMethod = 0;
-
-			switch (uNum) {
-			case 1:
-				int onlyPdfConv = 1;
-				pdf.pdfToText(onlyPdfConv, numForCallSetFileListMethod);
-				break;
-			case 2:
-				int onlyPNGConv = 2;
-				png.pngToText(onlyPNGConv, numForCallSetFileListMethod);
-				break;
-			case 3:
-				int bothConv = 3;
-				both_PDF_and_PNG.bothConversion(bothConv, numForCallSetFileListMethod);
-				break;
-			default:
-				MyLogger.myLoggerr.info("Wrong Input Please Enter Correct Number");
-				break;
+			int choice = scanner.nextInt();
+			switch (choice)
+			{
+				case 1:
+					pdfToText();
+					break;
+				case 2:
+					pngToText();
+					break;
+				case 3:
+					allConversion();
+					break;
+				default:
+					MyLogger.myLoggerr.info("Wrong Input Please Enter Correct Number");
+					break;
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			MyLogger.myLoggerr.log(Level.WARN, "Exception ::", e);
 		}
 	}
 
-	public static List<String> setFileList(String fileNameFromUser, List<String> list, int numForCallSetFileListMethod,
-			int num) {
+	public static void allConversion()
+	{
+		try
+		{
+			fileList = setFileNameFromUser(fileList, bothExtensionName);
 
-		String fileExtension = "";
-		boolean bValue = false;
-		int l = 0;
+			boolean checkFilesInDirectory = checkFilesInDirectory(bothExtensionName);
 
-		if (numForCallSetFileListMethod != 0) {
-			MyLogger.myLoggerr.info("Please Enter Correct File Name");
-		}
-		while (true) {
-
-			fileNameFromUser = scanner.next();
-			all_files_path = folderPath(fileNameFromUser) + "/";
-
-			if (fileNameFromUser.equalsIgnoreCase("0")) {
-				break;
-			}
-
-			if (num == 1 || num == 2 || num == 3) {
-				if (num == 1) {
-					fileExtension = pdfExtentension;
-					if (fileNameFromUser.length() > 0 && (fileNameFromUser.toLowerCase().endsWith(pdfExtentension))) {
-						bValue = true;
-						if (bValue == true && l <= 0) {
-						}
-						break;
-					}
+			if (checkFilesInDirectory == true)
+			{
+				if (fileList.size() > 0)
+				{
+					convertUserEnteredFiles(fileList, allFileList, bothExtensionName);
 				}
-				if (num == 2) {
-					fileExtension = pngExtentension;
-					if (fileNameFromUser.length() > 0 && (fileNameFromUser.toLowerCase().endsWith(pngExtentension))) {
-						bValue = true;
-						if (bValue == true && l <= 0) {
-						}
-						break;
-					}
-				}
-				if (num == 3) {
-					fileExtension = pdfExtentension + " File Or " + pngExtentension;
-					if (fileNameFromUser.length() > 0 && (fileNameFromUser.toLowerCase().endsWith(pdfExtentension)
-							|| fileNameFromUser.toLowerCase().endsWith(pngExtentension))) {
-						bValue = true;
-						if (bValue == true && l <= 0) {
-						}
-						break;
-					}
+				else
+				{
+					convertAllFiles(allFileList);
 				}
 			}
-			if (bValue == false) {
-				MyLogger.myLoggerr.info("Please Enter Valid " + fileExtension + " File Name And 0 For Next Process");
-				l++;
-				setFileList(fileNameFromUser, list, numForCallSetFileListMethod, num);
-			}
 		}
-		for (int i = fileNameFromUser.length() - 1; i >= 0; i--) {
-
-			if (fileNameFromUser.charAt(i) == '/') {
-				fileNameFromUser = fileNameFromUser.substring(i + 1, fileNameFromUser.length());
-				break;
-			}
+		catch (Exception e)
+		{
+			MyLogger.myLoggerr.log(Level.ERROR, "IOException ::", e);
 		}
-		if (bValue == true) {
-			list.add(fileNameFromUser);
-		}
-		return list;
 
 	}
 
-	private static String folderPath(String fileNameFromUser) {
+	public static boolean loadProperties()
+	{
+		try
+		{
+			properties.load(new FileInputStream("config.properties"));
 
-		for (int i = fileNameFromUser.length() - 1; i >= 0; i--) {
+			all_files_path = properties.getProperty("all_files_path");
 
-			if (fileNameFromUser.charAt(i) == '/') {
+			if (!all_files_path.endsWith(System.getProperty("file.separator")))
+			{
+				all_files_path = all_files_path + System.getProperty("file.separator");
+			}
+
+			File folderCheck = new File(all_files_path);
+
+			if (folderCheck.isDirectory() == false)
+			{
+				Scanner sc = new Scanner(System.in);
+				MyLogger.myLoggerr.info("Invalid Folder Path Enter 0 To Continue Used For Default Path");
+				if (sc.nextInt() == 0)
+				{
+					all_files_path = properties.getProperty("default_all_files_path");
+				}
+				else
+				{
+					MyLogger.myLoggerr.info("Please Provide Correct Path");
+					return false;
+				}
+			}
+			String depth = properties.getProperty("depthFromUser");
+
+			maxDepthFromUser = Integer.parseInt(depth);
+		}
+		catch (IOException e)
+		{
+			MyLogger.myLoggerr.log(Level.ERROR, "IOException ::", e);
+		}
+		return true;
+	}
+
+	@SuppressWarnings("resource")
+	public static void pdfToText()
+	{
+		try
+		{
+			fileList = setFileNameFromUser(fileList, pdfExtentension);
+
+			boolean checkFilesInDirectory = checkFilesInDirectory(pdfExtentension);
+
+			if (checkFilesInDirectory == true)
+			{
+				if (fileList.size() > 0)
+				{
+					convertUserEnteredFiles(fileList, pdfFileList, pdfExtentension);
+				}
+				else
+				{
+					convertAllFiles(pdfFileList);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			MyLogger.myLoggerr.log(Level.ERROR, "Exception ::", e);
+		}
+	}
+
+	public static void pngToText()
+	{
+		try
+		{
+			fileList = setFileNameFromUser(fileList, pngExtentension);
+
+			boolean checkFilesInDirectory = checkFilesInDirectory(pngExtentension);
+
+			if (checkFilesInDirectory == true)
+			{
+				if (fileList.size() > 0)
+				{
+					convertUserEnteredFiles(fileList, pngFileList, pngExtentension);
+				}
+				else
+				{
+					convertAllFiles(pngFileList);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			MyLogger.myLoggerr.log(Level.ERROR, "Exception ::", e);
+		}
+	}
+
+	@SuppressWarnings("resource")
+	public static List<String> setFileNameFromUser(List<String> fileList, String fileExtension)
+	{
+		MyLogger.myLoggerr.info("Please Enter The File Name or 0 to convert all files and also for Exit");
+
+		String fileNameFromUser = "";
+
+		while (true)
+		{
+			Scanner sc = new Scanner(System.in);
+			fileNameFromUser = sc.next();
+
+			if (fileNameFromUser.equalsIgnoreCase("0"))
+			{
+				break;
+			}
+			else if (fileNameFromUser.length() > 0)
+			{
+				if (fileNameFromUser.contains(System.getProperty("file.separator")))
+				{
+					all_files_path = setFolderPath(fileNameFromUser) + System.getProperty("file.separator");
+
+					for (int i = fileNameFromUser.length() - 1; i >= 0; i--)
+					{
+						if (fileNameFromUser.charAt(i) == System.getProperty("file.separator").charAt(0))
+						{
+							fileNameFromUser = fileNameFromUser.substring(i + 1, fileNameFromUser.length());
+							break;
+						}
+					}
+				}
+
+				if ((fileNameFromUser.toLowerCase().endsWith(pdfExtentension)) && fileExtension == pdfExtentension)
+				{
+					fileList.add(fileNameFromUser);
+					return fileList;
+				}
+				else if ((fileNameFromUser.toLowerCase().endsWith(pngExtentension)) && fileExtension == pngExtentension)
+				{
+					fileList.add(fileNameFromUser);
+					return fileList;
+				}
+				else if ((fileNameFromUser.toLowerCase().endsWith(pdfExtentension)
+						|| fileNameFromUser.toLowerCase().endsWith(pngExtentension))
+						&& fileExtension == bothExtensionName)
+				{
+					fileList.add(fileNameFromUser);
+					return fileList;
+				}
+				else
+				{
+					MyLogger.myLoggerr.info("Please Enter Valid File Name");
+					continue;
+				}
+			}
+			sc.close();
+		}
+		return fileList;
+	}
+
+	private static String setFolderPath(String fileNameFromUser)
+	{
+
+		for (int i = fileNameFromUser.length() - 1; i >= 0; i--)
+		{
+			if (fileNameFromUser.charAt(i) == System.getProperty("file.separator").charAt(0))
+			{
 				all_files_path = all_files_path + fileNameFromUser.substring(0, i);
 				break;
 			}
@@ -157,11 +271,12 @@ public class ScanPdfToText {
 		return all_files_path;
 	}
 
-	private static String createFileName(String fileNameFromUser) {
-
-		for (int i = fileNameFromUser.length() - 1; i >= 0; i--) {
-
-			if (fileNameFromUser.charAt(i) == '/') {
+	private static String createFileName(String fileNameFromUser)
+	{
+		for (int i = fileNameFromUser.length() - 1; i >= 0; i--)
+		{
+			if (fileNameFromUser.charAt(i) == System.getProperty("file.separator").charAt(0))
+			{
 				fileNameFromUser = fileNameFromUser.substring(i + 1, fileNameFromUser.length());
 				break;
 			}
@@ -169,142 +284,180 @@ public class ScanPdfToText {
 		return fileNameFromUser;
 	}
 
-	public static void CheckFiles(List<String> filesList, String fileName, String outputxtFilePath, int num,
-			int numForCallSetFileListMethod) {
-		try {
-			File folder = new File(all_files_path);
-			int calMaxDepth = 0;
+	public static void convertUserEnteredFiles(List<String> filesList, List<String> listpdf, String fileExtension)
+			throws Exception
+	{
+		String fileName = "";
+		int validFilePresentOrNot = 0;
 
-			if (folder.exists() && folder.isDirectory()) {
-				calMaxDepth = getMaxFolderDepth(folder);
-			} else {
-				return;
-			}
+		for (String fileNameFromList : filesList)
+		{
+			for (String listname : listpdf)
+			{
+				fileName = createFileName(listname);
+				if (fileName.equalsIgnoreCase(fileNameFromList))
+				{
+					validFilePresentOrNot++;
 
-			if (calMaxDepth >= maxDepthFromUser) {
-				if (folder.exists() && folder.isDirectory()) {
-					iterateFolder(folder, 0, maxDepthFromUser, calMaxDepth);
-				} else {
-					MyLogger.myLoggerr.info("Invalid folder path.");
-					return;
-				}
-
-			} else {
-				MyLogger.myLoggerr.info("You Are Provided Depth Are Not Under Maximum Folder Depth");
-				return;
-			}
-
-			if (fileList.size() > 0) {
-				int count = 0;
-				for (String filenamefileList : fileList) {
-					if (num == 1 && filenamefileList.endsWith(pdfExtentension)) {
-						count++;
-					} else if (num == 2 && filenamefileList.endsWith(pngExtentension)) {
-						count++;
-					} else if (num == 3 && (filenamefileList.endsWith(pngExtentension)
-							|| filenamefileList.endsWith(pdfExtentension))) {
-						count++;
+					if (fileName.endsWith(pdfExtentension))
+					{
+						pdfFileProcessing(fileName, listname);
 					}
-				}
-				if (count == 0) {
-					if (num == 1) {
-						MyLogger.myLoggerr.info("No PDF Files Are There");
-					} else if (num == 2) {
-						MyLogger.myLoggerr.info("No PNG Files Are There");
-					} else if (num == 3) {
-						MyLogger.myLoggerr.info("Both Files Are Not There");
-					}
-					return;
-				}
-			} else if (fileList == null) {
-				MyLogger.myLoggerr.info("No Files Are There");
-				return;
-			}
-
-			File[] allFiles = folder.listFiles();
-			int validFilePresentOrNot = 0;
-			numForCallSetFileListMethod = 0;
-			int numComeFrom = 0;
-			String fileNameFromMainList = "";
-
-			if (allFiles != null && allFiles.length > 0) {
-				for (File file : allFiles) {
-					if (filesList.size() > 0) {
-						for (String fileNameFroUserList : filesList) {
-							fileName = createFileName(file.getName());
-							if (fileName.equalsIgnoreCase(fileNameFroUserList)) {
-								fileName = file.getName();
-								fileNameFromMainList = file.getAbsolutePath();
-								validFilePresentOrNot++;
-								checkFileFoundCount(fileName, outputxtFilePath, num, numComeFrom, fileNameFromMainList);
-								return;
-							} else {
-								for (String listname : fileList) {
-									fileName = createFileName(listname);
-									if (fileName.equalsIgnoreCase(fileNameFroUserList)) {
-										validFilePresentOrNot++;
-										fileNameFromMainList = listname;
-										checkFileFoundCount(fileName, outputxtFilePath, num, numComeFrom,
-												fileNameFromMainList);
-									}
-								}
-								if (validFilePresentOrNot == 0) {
-									numForCallSetFileListMethod++;
-									MyLogger.myLoggerr.info("This File Are Not Present Please Enter Valid File Which "
-											+ "Are Present in Directory ");
-									if (num == 1) {
-										pdf.pdfToText(num, numForCallSetFileListMethod);
-									} else if (num == 2) {
-										png.pngToText(num, numForCallSetFileListMethod);
-									} else {
-										both_PDF_and_PNG.bothConversion(num, numForCallSetFileListMethod);
-									}
-								}
-								return;
-							}
-						}
-					} else if (fileList.size() > 0 && fileList != null) {
-						for (String fileNameFromFilelist : fileList) {
-							fileName = createFileName(fileNameFromFilelist);
-							fileNameFromMainList = fileNameFromFilelist;
-							validFilePresentOrNot++;
-							checkFileFoundCount(fileName, outputxtFilePath, num, numComeFrom, fileNameFromMainList);
-						}
-						return;
-					} else {
-						fileName = file.getName();
-						checkFileFoundCount(fileName, outputxtFilePath, num, numComeFrom, fileNameFromMainList);
+					else if (fileName.endsWith(pngExtentension))
+					{
+						pngFileProcessing(fileName, listname);
 					}
 				}
 			}
-			if (filefoundCount == 0) {
-				if (num == 1) {
-					MyLogger.myLoggerr.info("Pdf Files Are Not There");
-				} else if (num == 2) {
-					MyLogger.myLoggerr.info("Images Files Are Not There");
-				} else if (num == 3) {
-					MyLogger.myLoggerr.info("Both (Pdf and Images) Files Are Not There");
-				}
-			} else {
-				if (filefoundCount == 0) {
-					MyLogger.myLoggerr.info("In that path No files Are There");
-				}
+		}
+
+		if (validFilePresentOrNot == 0)
+		{
+			MyLogger.myLoggerr
+					.info("This File Are Not Present Please Enter Valid File Which Are Present in Directory ");
+			if (fileExtension == pdfExtentension)
+			{
+				pdfToText();
 			}
-		} catch (Exception e) {
-			MyLogger.myLoggerr.log(Level.WARN, "Exception :: ", e);
+			else if (fileExtension == pngExtentension)
+			{
+				pngToText();
+			}
+			else
+			{
+				allConversion();
+			}
 		}
 	}
 
-	private static void pdfFileProcessing(String fileName, String txtFilePath, int numComeFrom,
-			String fileNameFromMainList) {
+	public static void convertAllFiles(List<String> listpdf)
+	{
+		String fileName = "";
+		for (String fileNameFromFilelist : listpdf)
+		{
+			fileName = createFileName(fileNameFromFilelist);
+			if (fileName.endsWith(pdfExtentension))
+			{
+				pdfFileProcessing(fileName, fileNameFromFilelist);
+			}
+			else if (fileName.endsWith(pngExtentension))
+			{
+				pngFileProcessing(fileName, fileNameFromFilelist);
+			}
+		}
+	}
 
-		try {
+	public static void addFilesInList(File folder, int depth, int calMaxDepth, String fileExtension)
+	{
+		if (depth > maxDepthFromUser)
+		{
+			return;
+		}
 
+		File[] files = folder.listFiles();
+		if (files != null)
+		{
+			for (File file : files)
+			{
+				if (file.isDirectory())
+				{
+					addFilesInList(file, depth + 1, calMaxDepth, fileExtension);
+				}
+				else
+				{
+					String fileName = file.getName().toLowerCase();
+					if (fileName.endsWith(pdfExtentension) && fileExtension == pdfExtentension)
+					{
+						pdfFileList.add(file.getAbsolutePath());
+					}
+					else if (fileName.endsWith(pngExtentension) && fileExtension == pngExtentension)
+					{
+						pngFileList.add(file.getAbsolutePath());
+					}
+					else if ((fileName.endsWith(pdfExtentension) || fileName.endsWith(pngExtentension))
+							&& fileExtension == bothExtensionName)
+					{
+						allFileList.add(file.getAbsolutePath());
+					}
+				}
+			}
+		}
+
+	}
+
+	public static int getMaxFolderDepth(File folder)
+	{
+		int maxDepth = 0;
+		File[] files = folder.listFiles();
+		if (files != null)
+		{
+			for (File file : files)
+			{
+				if (file.isDirectory())
+				{
+					int depth = getMaxFolderDepth(file) + 1;
+					if (depth > maxDepth)
+					{
+						maxDepth = depth;
+					}
+				}
+			}
+		}
+		return maxDepth;
+	}
+
+	public static boolean checkFilesInDirectory(String fileExtension)
+	{
+
+		File folder = new File(all_files_path);
+		int calMaxDepth = 0;
+
+		calMaxDepth = getMaxFolderDepth(folder);
+		if (maxDepthFromUser == -1)
+		{
+			maxDepthFromUser = calMaxDepth;
+		}
+
+		if (calMaxDepth >= maxDepthFromUser)
+		{
+			if (folder.exists() && folder.isDirectory())
+			{
+				addFilesInList(folder, 0, calMaxDepth, fileExtension);
+			}
+		}
+		else
+		{
+			MyLogger.myLoggerr.info("You Are Provided Depth Are Not Under Maximum Folder Depth");
+			return false;
+		}
+
+		if (pdfFileList.size() <= 0 && fileExtension == pdfExtentension)
+		{
+			MyLogger.myLoggerr.info("PDF Files Are Not There In Your Directory");
+			return false;
+		}
+		else if (pngFileList.size() <= 0 && fileExtension == pngExtentension)
+		{
+			MyLogger.myLoggerr.info("PNG Files Are Not There In Your Directory");
+			return false;
+		}
+		else if (allFileList.size() <= 0 && fileExtension == bothExtensionName)
+		{
+			MyLogger.myLoggerr.info("Both Files Are Not There In Your Directory");
+			return false;
+		}
+		return true;
+	}
+
+	private static void pdfFileProcessing(String fileName, String fileNameFromMainList)
+	{
+		try
+		{
 			boolean fileAdd = uniqueFiles.add(fileName);
 
-			if (fileAdd == true) {
-
-				String property = properties.getProperty("all_files_path");
+			if (fileAdd == true)
+			{
+				String outPutFilePath = "";
 
 				String tesseractFilePath = properties.getProperty("tesseract_data_path");
 
@@ -312,30 +465,26 @@ public class ScanPdfToText {
 
 				tesseract.setDatapath(tesseractFilePath);
 
-				String replacePath = fileNameFromMainList.replace(property, "/home/kalpesh/Outputfiles");
-				String replaceName = replacePath.replace(fileName, "");
-
-				File inputFile = null;
-
-				if (numComeFrom == 10) {
-					inputFile = new File(all_files_path + "/" + fileName);
-				} else {
-					inputFile = new File(fileNameFromMainList);
-				}
+				File inputFile = new File(fileNameFromMainList);
 
 				String result = tesseract.doOCR(inputFile);
 
 				MyLogger.myLoggerr.info(fileName + " File Conversion Is Started...");
 
-				if (txtFilePath == null || txtFilePath.length() <= 0) {
-					txtFilePath = properties.getProperty("default_OutPut_File_Path");
-				}
+				String inputPath = properties.getProperty("all_files_path");
 
-				txtFilePath = replaceName;
-				File folder = new File(txtFilePath);
+				String outFilePath = properties.getProperty("OutPut_File_Path");
+
+				String replacePath = fileNameFromMainList.replace(inputPath, outFilePath);
+
+				String replaceName = replacePath.replace(fileName, "");
+
+				outPutFilePath = replaceName;
+
+				File folder = new File(outPutFilePath);
 				folder.mkdirs();
 
-				File outputFile = new File(txtFilePath + fileName.replaceAll(pdfExtentension, txtExtension));
+				File outputFile = new File(outPutFilePath + fileName.replaceAll(pdfExtentension, txtExtension));
 
 				FileWriter txtFileWriter = new FileWriter(outputFile);
 
@@ -346,63 +495,49 @@ public class ScanPdfToText {
 				MyLogger.myLoggerr.info(fileName + " To " + fileName.replaceAll(pdfExtentension, txtExtension)
 						+ " File Conversion Is Success!!!");
 			}
-		} catch (TesseractException e) {
-			MyLogger.myLoggerr.log(Level.ERROR, "TesseractException ::", e);
-		} catch (IOException e) {
-			MyLogger.myLoggerr.log(Level.ERROR, "IOException ::", e);
+		}
+		catch (TesseractException | IOException e)
+		{
+			MyLogger.myLoggerr.log(Level.ERROR, "IOException || TesseractException :: ", e);
 		}
 	}
 
-	private static void pngFileProcessing(String pngFileName, String outputxtFilePath, int numComeFrom,
-			String fileNameFromMainList) {
-		try {
+	private static void pngFileProcessing(String fileName, String fileNameFromMainList)
+	{
+		try
+		{
+			boolean fileAdd = uniqueFiles.add(fileName);
 
-			boolean fileAdd = uniqueFiles.add(pngFileName);
+			if (fileAdd == true)
+			{
+				String inputPath = properties.getProperty("all_files_path");
 
-			if (fileAdd == true) {
+				String outFilePath = properties.getProperty("OutPut_File_Path");
 
-				String pngDirective = properties.getProperty("all_files_path");
-
-				String outputDirective = properties.getProperty("OutPut_File_Path");
-
+				String replacePath = fileNameFromMainList.replace(inputPath, outFilePath);
+				String replaceName = replacePath.replace(fileName, "");
 				String tesseractFilePath = properties.getProperty("tesseract_data_path");
 
 				Tesseract tesseract = new Tesseract();
 
 				tesseract.setDatapath(tesseractFilePath);
 
-				tesseract.setLanguage("eng");
+				String outPutFilePath = "";
 
-				String replacePath = fileNameFromMainList.replace(pngDirective, outputDirective);
-				String replaceName = replacePath.replace(pngFileName, "");
-
-				File inputImageFile = null;
-
-				if (numComeFrom == 10) {
-					inputImageFile = new File(all_files_path + "/" + pngFileName);
-				} else {
-					inputImageFile = new File(fileNameFromMainList);
-				}
+				File inputImageFile = new File(fileNameFromMainList);
 
 				BufferedImage image = ImageIO.read(inputImageFile);
 
 				String result = tesseract.doOCR(image);
 
-				MyLogger.myLoggerr.info(pngFileName + " File Conversion Is Started...");
+				MyLogger.myLoggerr.info(fileName + " File Conversion Is Started...");
 
-				if (outputxtFilePath == null || outputxtFilePath.length() <= 0) {
-					outputxtFilePath = properties.getProperty("default_OutPut_File_Path");
-				}
+				outPutFilePath = replaceName;
 
-				outputxtFilePath = replaceName;
-				File folder = new File(outputxtFilePath);
-				boolean mkdirs = folder.mkdirs();
+				File folder = new File(outPutFilePath);
+				folder.mkdirs();
 
-				if (mkdirs == false) {
-
-				}
-
-				File outputFile = new File(outputxtFilePath + pngFileName.replaceAll(pngExtentension, txtExtension));
+				File outputFile = new File(outPutFilePath + fileName.replaceAll(pngExtentension, txtExtension));
 
 				FileWriter writer = new FileWriter(outputFile);
 
@@ -410,103 +545,13 @@ public class ScanPdfToText {
 
 				writer.close();
 
-				MyLogger.myLoggerr.info(pngFileName + " To " + pngFileName.replaceAll(pngExtentension, txtExtension)
+				MyLogger.myLoggerr.info(fileName + " To " + fileName.replaceAll(pngExtentension, txtExtension)
 						+ " File Conversion Is Success!!!");
 			}
-		} catch (IOException | TesseractException e) {
+		}
+		catch (IOException | TesseractException e)
+		{
 			MyLogger.myLoggerr.log(Level.ERROR, "IOException || TesseractException :: ", e);
 		}
 	}
-
-	static void checkFileFoundCount(String fileName, String outputxtFilePath, int num, int numComeFrom,
-			String fileNameFromMainList) {
-
-		if (num == 1) {
-			if (fileName.endsWith(pdfExtentension)) {
-				filefoundCount++;
-				pdfFileProcessing(fileName, outputxtFilePath, numComeFrom, fileNameFromMainList);
-			}
-		}
-
-		else if (num == 2) {
-			if (fileName.endsWith(pngExtentension)) {
-				filefoundCount++;
-				pngFileProcessing(fileName, outputxtFilePath, numComeFrom, fileNameFromMainList);
-			}
-		}
-
-		else if (num == 3) {
-			if (fileName.endsWith(pdfExtentension)) {
-				filefoundCount++;
-				pdfFileProcessing(fileName, outputxtFilePath, numComeFrom, fileNameFromMainList);
-			} else if (fileName.endsWith(pngExtentension)) {
-				filefoundCount++;
-				pngFileProcessing(fileName, outputxtFilePath, numComeFrom, fileNameFromMainList);
-			}
-		} else {
-			MyLogger.myLoggerr.info("Wrong File From User We Can't Convert This File");
-		}
-	}
-
-	public static int countFolders(String directoryPath) {
-		int count = 0;
-		File directory = new File(directoryPath);
-
-		if (directory.exists() && directory.isDirectory()) {
-			File[] files = directory.listFiles();
-
-			if (files != null) {
-				for (File file : files) {
-					if (file.isDirectory()) {
-						count++;
-						count += countFolders(file.getAbsolutePath());
-					}
-				}
-			}
-		}
-		return count;
-	}
-
-	public static void iterateFolder(File folder, int depth, int maxDepth, int calMaxDepth) {
-
-		if (maxDepth < maxDepthFromUser) {
-			MyLogger.myLoggerr.info("Not allowed");
-			return;
-		}
-
-		if (depth > maxDepth) {
-			return;
-		}
-
-		File[] files = folder.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					iterateFolder(file, depth + 1, maxDepth, calMaxDepth); // Recursive call to iterate subfolder
-				} else {
-					String fileName = file.getName().toLowerCase();
-					if (fileName.endsWith(".pdf") || fileName.endsWith(".png")) {
-						fileList.add(file.getAbsolutePath());
-					}
-				}
-			}
-		}
-	}
-
-	public static int getMaxFolderDepth(File folder) {
-		int maxDepth1 = 0;
-		File[] files = folder.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					int depth = getMaxFolderDepth(file) + 1;
-					if (depth > maxDepth1) {
-						maxDepth1 = depth;
-					}
-				}
-			}
-		}
-		return maxDepth1;
-	}
-
 }
