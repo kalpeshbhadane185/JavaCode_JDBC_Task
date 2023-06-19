@@ -3,7 +3,6 @@ package com.logilite.pdfToText;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 
 import net.sourceforge.tess4j.Tesseract;
@@ -26,12 +26,12 @@ public class ScanPdfToText
 	static Scanner				scanner				= new Scanner(System.in);
 	public static Properties	properties			= new Properties();
 	public static String		all_files_path		= null;
-	public static String		pngExtentension		= ".png";
+	public static String		imgExtentension		= "";
 	public static String		pdfExtentension		= ".pdf";
 	public static String		txtExtension		= ".txt";
-	public static String		bothExtensionName	= "pdf and txt";
+	public static String		allExtensionName	= "pdf and img";
 	public static String		defaultOutPutPath	= null;
-	public static List<String>	fileList			= new ArrayList<>();
+	public static List<String>	userFileName		= new ArrayList<>();
 	public static int			maxDepthFromUser	= 0;
 	public static Set<String>	uniqueFiles			= new HashSet<>();
 	public static List<String>	allFileList			= new ArrayList<>();
@@ -44,6 +44,7 @@ public class ScanPdfToText
 		if (loadProperties == true)
 		{
 			choiceForUser();
+
 		}
 	}
 
@@ -51,7 +52,7 @@ public class ScanPdfToText
 	{
 		try
 		{
-			MyLogger.myLoggerr.info("Select any Option from following list\n" + "1. Convert PDF to txt \n"
+			LoggerForFileConv.logger.info("Select any Option from following list\n" + "1. Convert PDF to txt \n"
 					+ "2. Convert png to txt\n" + "3. Convert all");
 
 			int choice = scanner.nextInt();
@@ -67,13 +68,13 @@ public class ScanPdfToText
 					allConversion();
 					break;
 				default:
-					MyLogger.myLoggerr.info("Wrong Input Please Enter Correct Number");
+					LoggerForFileConv.logger.info("Wrong Input Please Enter Correct Number");
 					break;
 			}
 		}
 		catch (Exception e)
 		{
-			MyLogger.myLoggerr.log(Level.WARN, "Exception ::", e);
+			LoggerForFileConv.logger.log(Level.WARN, "Exception ::", e);
 		}
 	}
 
@@ -81,15 +82,20 @@ public class ScanPdfToText
 	{
 		try
 		{
-			fileList = setFileNameFromUser(fileList, bothExtensionName);
+			userFileName = setFileNameFromUser(userFileName, allExtensionName);
+			if (userFileName == null)
+			{
+				System.exit(0);
+			}
 
-			boolean checkFilesInDirectory = checkFilesInDirectory(bothExtensionName);
+			boolean checkFilesInDirectory = checkFilesInDirectory(allExtensionName);
 
 			if (checkFilesInDirectory == true)
 			{
-				if (fileList.size() > 0)
+
+				if (userFileName.size() > 0)
 				{
-					convertUserEnteredFiles(fileList, allFileList, bothExtensionName);
+					convertUserEnteredFiles(userFileName, allFileList, allExtensionName);
 				}
 				else
 				{
@@ -99,7 +105,7 @@ public class ScanPdfToText
 		}
 		catch (Exception e)
 		{
-			MyLogger.myLoggerr.log(Level.ERROR, "IOException ::", e);
+			LoggerForFileConv.logger.log(Level.ERROR, "IOException ::", e);
 		}
 
 	}
@@ -122,14 +128,15 @@ public class ScanPdfToText
 			if (folderCheck.isDirectory() == false)
 			{
 				Scanner sc = new Scanner(System.in);
-				MyLogger.myLoggerr.info("Invalid Folder Path Enter 0 To Continue Used For Default Path");
+				LoggerForFileConv.logger.log(Level.INFO,
+						"Invalid Folder Path Enter 0 To Continue Used For Default Path");
 				if (sc.nextInt() == 0)
 				{
 					all_files_path = properties.getProperty("default_all_files_path");
 				}
 				else
 				{
-					MyLogger.myLoggerr.info("Please Provide Correct Path");
+					LoggerForFileConv.logger.info("Please Provide Correct Path");
 					return false;
 				}
 			}
@@ -139,7 +146,7 @@ public class ScanPdfToText
 		}
 		catch (IOException e)
 		{
-			MyLogger.myLoggerr.log(Level.ERROR, "IOException ::", e);
+			LoggerForFileConv.logger.log(Level.ERROR, "IOException ::", e);
 		}
 		return true;
 	}
@@ -149,15 +156,19 @@ public class ScanPdfToText
 	{
 		try
 		{
-			fileList = setFileNameFromUser(fileList, pdfExtentension);
+			userFileName = setFileNameFromUser(userFileName, pdfExtentension);
+			if (userFileName == null)
+			{
+				System.exit(0);
+			}
 
 			boolean checkFilesInDirectory = checkFilesInDirectory(pdfExtentension);
 
 			if (checkFilesInDirectory == true)
 			{
-				if (fileList.size() > 0)
+				if (userFileName.size() > 0)
 				{
-					convertUserEnteredFiles(fileList, pdfFileList, pdfExtentension);
+					convertUserEnteredFiles(userFileName, pdfFileList, pdfExtentension);
 				}
 				else
 				{
@@ -167,7 +178,7 @@ public class ScanPdfToText
 		}
 		catch (Exception e)
 		{
-			MyLogger.myLoggerr.log(Level.ERROR, "Exception ::", e);
+			LoggerForFileConv.logger.log(Level.ERROR, "Exception ::", e);
 		}
 	}
 
@@ -175,15 +186,19 @@ public class ScanPdfToText
 	{
 		try
 		{
-			fileList = setFileNameFromUser(fileList, pngExtentension);
+			userFileName = setFileNameFromUser(userFileName, imgExtentension);
+			if (userFileName == null)
+			{
+				System.exit(0);
+			}
 
-			boolean checkFilesInDirectory = checkFilesInDirectory(pngExtentension);
+			boolean checkFilesInDirectory = checkFilesInDirectory(imgExtentension);
 
 			if (checkFilesInDirectory == true)
 			{
-				if (fileList.size() > 0)
+				if (userFileName.size() > 0)
 				{
-					convertUserEnteredFiles(fileList, pngFileList, pngExtentension);
+					convertUserEnteredFiles(userFileName, pngFileList, imgExtentension);
 				}
 				else
 				{
@@ -193,19 +208,21 @@ public class ScanPdfToText
 		}
 		catch (Exception e)
 		{
-			MyLogger.myLoggerr.log(Level.ERROR, "Exception ::", e);
+			LoggerForFileConv.logger.log(Level.ERROR, "Exception ::", e);
 		}
 	}
 
 	@SuppressWarnings("resource")
 	public static List<String> setFileNameFromUser(List<String> fileList, String fileExtension)
 	{
-		MyLogger.myLoggerr.info("Please Enter The File Name or 0 to convert all files and also for Exit");
+		LoggerForFileConv.logger.log(Level.INFO,
+				"Please Enter The File Name or 0 to convert all files and also for Exit");
 
 		String fileNameFromUser = "";
 
 		while (true)
 		{
+
 			Scanner sc = new Scanner(System.in);
 			fileNameFromUser = sc.next();
 
@@ -213,11 +230,15 @@ public class ScanPdfToText
 			{
 				break;
 			}
-			else if (fileNameFromUser.length() > 0)
+
+			assignPngExtension(fileNameFromUser);
+
+			if (fileNameFromUser.length() > 0)
 			{
+
 				if (fileNameFromUser.contains(System.getProperty("file.separator")))
 				{
-					all_files_path = setFolderPath(fileNameFromUser) + System.getProperty("file.separator");
+					all_files_path += fileNameFromUser;
 
 					for (int i = fileNameFromUser.length() - 1; i >= 0; i--)
 					{
@@ -227,6 +248,16 @@ public class ScanPdfToText
 							break;
 						}
 					}
+					if (fileNameFromUser.toLowerCase().endsWith(imgExtentension))
+					{
+						pngFileProcessing(fileNameFromUser, all_files_path);
+						return null;
+					}
+					else if (fileNameFromUser.toLowerCase().endsWith(pdfExtentension))
+					{
+						pdfFileProcessing(fileNameFromUser, all_files_path);
+						return null;
+					}
 				}
 
 				if ((fileNameFromUser.toLowerCase().endsWith(pdfExtentension)) && fileExtension == pdfExtentension)
@@ -234,21 +265,22 @@ public class ScanPdfToText
 					fileList.add(fileNameFromUser);
 					return fileList;
 				}
-				else if ((fileNameFromUser.toLowerCase().endsWith(pngExtentension)) && fileExtension == pngExtentension)
+				else if ((fileNameFromUser.toLowerCase().endsWith(imgExtentension)) && !imgExtentension.isEmpty()
+						&& fileExtension == imgExtentension)
 				{
 					fileList.add(fileNameFromUser);
 					return fileList;
 				}
-				else if ((fileNameFromUser.toLowerCase().endsWith(pdfExtentension)
-						|| fileNameFromUser.toLowerCase().endsWith(pngExtentension))
-						&& fileExtension == bothExtensionName)
+				else if (fileNameFromUser.toLowerCase().endsWith(pdfExtentension)
+						|| (fileNameFromUser.toLowerCase().endsWith(imgExtentension) && !imgExtentension.isEmpty())
+								&& fileExtension == allExtensionName)
 				{
 					fileList.add(fileNameFromUser);
 					return fileList;
 				}
 				else
 				{
-					MyLogger.myLoggerr.info("Please Enter Valid File Name");
+					LoggerForFileConv.logger.info("Please Enter Valid File Name");
 					continue;
 				}
 			}
@@ -257,18 +289,17 @@ public class ScanPdfToText
 		return fileList;
 	}
 
-	private static String setFolderPath(String fileNameFromUser)
+	private static void assignPngExtension(String fileName)
 	{
-
-		for (int i = fileNameFromUser.length() - 1; i >= 0; i--)
+		String[] imgExtension = { ".png", ".bmp", ".pnm", ".jfif", ".jpeg", ".tiff", ".psd", ".eps", ".jpg", ".raw",
+				".gif" };
+		for (int i = 0; i < imgExtension.length; i++)
 		{
-			if (fileNameFromUser.charAt(i) == System.getProperty("file.separator").charAt(0))
+			if (fileName.endsWith(imgExtension[i]))
 			{
-				all_files_path = all_files_path + fileNameFromUser.substring(0, i);
-				break;
+				imgExtentension = imgExtension[i];
 			}
 		}
-		return all_files_path;
 	}
 
 	private static String createFileName(String fileNameFromUser)
@@ -297,13 +328,14 @@ public class ScanPdfToText
 				fileName = createFileName(listname);
 				if (fileName.equalsIgnoreCase(fileNameFromList))
 				{
+					assignPngExtension(fileName);
 					validFilePresentOrNot++;
 
 					if (fileName.endsWith(pdfExtentension))
 					{
 						pdfFileProcessing(fileName, listname);
 					}
-					else if (fileName.endsWith(pngExtentension))
+					else if (fileName.endsWith(imgExtentension))
 					{
 						pngFileProcessing(fileName, listname);
 					}
@@ -313,13 +345,13 @@ public class ScanPdfToText
 
 		if (validFilePresentOrNot == 0)
 		{
-			MyLogger.myLoggerr
+			LoggerForFileConv.logger
 					.info("This File Are Not Present Please Enter Valid File Which Are Present in Directory ");
 			if (fileExtension == pdfExtentension)
 			{
 				pdfToText();
 			}
-			else if (fileExtension == pngExtentension)
+			else if (fileExtension == imgExtentension)
 			{
 				pngToText();
 			}
@@ -330,17 +362,20 @@ public class ScanPdfToText
 		}
 	}
 
-	public static void convertAllFiles(List<String> listpdf)
+	public static void convertAllFiles(List<String> listOfFiles)
 	{
 		String fileName = "";
-		for (String fileNameFromFilelist : listpdf)
+
+		for (String fileNameFromFilelist : listOfFiles)
 		{
+			assignPngExtension(fileNameFromFilelist);
+
 			fileName = createFileName(fileNameFromFilelist);
 			if (fileName.endsWith(pdfExtentension))
 			{
 				pdfFileProcessing(fileName, fileNameFromFilelist);
 			}
-			else if (fileName.endsWith(pngExtentension))
+			else if (fileName.endsWith(imgExtentension))
 			{
 				pngFileProcessing(fileName, fileNameFromFilelist);
 			}
@@ -366,16 +401,17 @@ public class ScanPdfToText
 				else
 				{
 					String fileName = file.getName().toLowerCase();
+					assignPngExtension(fileName);
 					if (fileName.endsWith(pdfExtentension) && fileExtension == pdfExtentension)
 					{
 						pdfFileList.add(file.getAbsolutePath());
 					}
-					else if (fileName.endsWith(pngExtentension) && fileExtension == pngExtentension)
+					else if (fileName.endsWith(imgExtentension) && fileExtension.isEmpty())
 					{
 						pngFileList.add(file.getAbsolutePath());
 					}
-					else if ((fileName.endsWith(pdfExtentension) || fileName.endsWith(pngExtentension))
-							&& fileExtension == bothExtensionName)
+					else if ((fileName.endsWith(pdfExtentension) || fileName.endsWith(imgExtentension))
+							&& fileExtension == allExtensionName)
 					{
 						allFileList.add(file.getAbsolutePath());
 					}
@@ -427,23 +463,23 @@ public class ScanPdfToText
 		}
 		else
 		{
-			MyLogger.myLoggerr.info("You Are Provided Depth Are Not Under Maximum Folder Depth");
+			LoggerForFileConv.logger.info("You Are Provided Depth Are Not Under Maximum Folder Depth");
 			return false;
 		}
 
 		if (pdfFileList.size() <= 0 && fileExtension == pdfExtentension)
 		{
-			MyLogger.myLoggerr.info("PDF Files Are Not There In Your Directory");
+			LoggerForFileConv.logger.info("PDF Files Are Not There In Your Directory");
 			return false;
 		}
-		else if (pngFileList.size() <= 0 && fileExtension == pngExtentension)
+		else if (pngFileList.size() <= 0 && fileExtension == imgExtentension)
 		{
-			MyLogger.myLoggerr.info("PNG Files Are Not There In Your Directory");
+			LoggerForFileConv.logger.info("PNG Files Are Not There In Your Directory");
 			return false;
 		}
-		else if (allFileList.size() <= 0 && fileExtension == bothExtensionName)
+		else if (allFileList.size() <= 0 && fileExtension == allExtensionName)
 		{
-			MyLogger.myLoggerr.info("Both Files Are Not There In Your Directory");
+			LoggerForFileConv.logger.info("Both Files Are Not There In Your Directory");
 			return false;
 		}
 		return true;
@@ -465,40 +501,49 @@ public class ScanPdfToText
 
 				tesseract.setDatapath(tesseractFilePath);
 
+				tesseract.setTessVariable("user_defined_dpi", "96");
+
 				File inputFile = new File(fileNameFromMainList);
 
-				String result = tesseract.doOCR(inputFile);
+				if (inputFile.exists() && inputFile.isFile())
+				{
+					String result = tesseract.doOCR(inputFile);
 
-				MyLogger.myLoggerr.info(fileName + " File Conversion Is Started...");
+					LoggerForFileConv.logger.info(fileName + " File Conversion Is Started...");
 
-				String inputPath = properties.getProperty("all_files_path");
+					String inputPath = properties.getProperty("all_files_path");
 
-				String outFilePath = properties.getProperty("OutPut_File_Path");
+					String outFilePath = properties.getProperty("OutPut_File_Path");
 
-				String replacePath = fileNameFromMainList.replace(inputPath, outFilePath);
+					String replacePath = fileNameFromMainList.replace(inputPath, outFilePath);
 
-				String replaceName = replacePath.replace(fileName, "");
+					String replaceName = replacePath.replace(fileName, "");
 
-				outPutFilePath = replaceName;
+					outPutFilePath = replaceName;
 
-				File folder = new File(outPutFilePath);
-				folder.mkdirs();
+					File folder = new File(outPutFilePath);
+					folder.mkdirs();
 
-				File outputFile = new File(outPutFilePath + fileName.replaceAll(pdfExtentension, txtExtension));
+					File outputFile = new File(outPutFilePath + fileName.replaceAll(pdfExtentension, txtExtension));
 
-				FileWriter txtFileWriter = new FileWriter(outputFile);
+					FileWriter txtFileWriter = new FileWriter(outputFile);
 
-				txtFileWriter.write(result);
+					txtFileWriter.write(result);
 
-				txtFileWriter.close();
+					txtFileWriter.close();
 
-				MyLogger.myLoggerr.info(fileName + " To " + fileName.replaceAll(pdfExtentension, txtExtension)
-						+ " File Conversion Is Success!!!");
+					LoggerForFileConv.logger.info(fileName + " To " + fileName.replaceAll(pdfExtentension, txtExtension)
+							+ " File Conversion Is Success!!!");
+				}
+				else
+				{
+					LoggerForFileConv.logger.info("You Are Entered Path With File Name It Doesn't Exist");
+				}
 			}
 		}
 		catch (TesseractException | IOException e)
 		{
-			MyLogger.myLoggerr.log(Level.ERROR, "IOException || TesseractException :: ", e);
+			LoggerForFileConv.logger.log(Level.ERROR, "IOException || TesseractException :: ", e);
 		}
 	}
 
@@ -522,36 +567,47 @@ public class ScanPdfToText
 
 				tesseract.setDatapath(tesseractFilePath);
 
+				tesseract.setTessVariable("user_defined_dpi", "96");
+
 				String outPutFilePath = "";
 
 				File inputImageFile = new File(fileNameFromMainList);
 
-				BufferedImage image = ImageIO.read(inputImageFile);
+				if (inputImageFile.exists() && inputImageFile.isFile())
+				{
 
-				String result = tesseract.doOCR(image);
+					BufferedImage image = ImageIO.read(inputImageFile);
 
-				MyLogger.myLoggerr.info(fileName + " File Conversion Is Started...");
+					String result = tesseract.doOCR(image);
 
-				outPutFilePath = replaceName;
+					LoggerForFileConv.logger.info(fileName + " File Conversion Is Started...");
 
-				File folder = new File(outPutFilePath);
-				folder.mkdirs();
+					outPutFilePath = replaceName;
 
-				File outputFile = new File(outPutFilePath + fileName.replaceAll(pngExtentension, txtExtension));
+					File folder = new File(outPutFilePath);
+					folder.mkdirs();
 
-				FileWriter writer = new FileWriter(outputFile);
+					File outputFile = new File(outPutFilePath + fileName.replaceAll(imgExtentension, txtExtension));
 
-				writer.write(result);
+					FileWriter writer = new FileWriter(outputFile);
 
-				writer.close();
+					writer.write(result);
 
-				MyLogger.myLoggerr.info(fileName + " To " + fileName.replaceAll(pngExtentension, txtExtension)
-						+ " File Conversion Is Success!!!");
+					writer.close();
+
+					LoggerForFileConv.logger.info(fileName + " To " + fileName.replaceAll(imgExtentension, txtExtension)
+							+ " File Conversion Is Success!!!");
+				}
+				else
+				{
+					LoggerForFileConv.logger.info("You Are Entered Path With File Name It Doesn't Exist");
+				}
 			}
+
 		}
 		catch (IOException | TesseractException e)
 		{
-			MyLogger.myLoggerr.log(Level.ERROR, "IOException || TesseractException :: ", e);
+			LoggerForFileConv.logger.log(Level.ERROR, "IOException || TesseractException :: ", e);
 		}
 	}
 }
