@@ -8,7 +8,7 @@ public class App
 	public static Map<Object, String> map = new LinkedHashMap<>();
 
 	public static void main(String[] args)
-	{
+	{ 
 		if (args.length > 0)
 		{
 			for (String string : args)
