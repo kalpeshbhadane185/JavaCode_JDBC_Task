@@ -12,7 +12,6 @@ public class Main
 
 	public static void main(String[] args)
 	{
-		System.out.println(System.getProperty("user.home"));
 		if (args.length > 0)
 		{
 			for (String string : args)
@@ -47,6 +46,5 @@ public class Main
 			return;
 
 		}
-		System.out.println(System.getProperty("user.home"));
 	}
 }

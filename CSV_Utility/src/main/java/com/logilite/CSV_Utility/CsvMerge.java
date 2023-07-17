@@ -222,7 +222,7 @@ public class CsvMerge
 				}
 				writer.newLine();
 			}
-			CSV_Utility_Logger.logger.info(" file merge completed successfully.");
+			CSV_Utility_Logger.logger.info(" file has successfully merge at this path\n"+outputFileName);
 		}
 		else
 		{
