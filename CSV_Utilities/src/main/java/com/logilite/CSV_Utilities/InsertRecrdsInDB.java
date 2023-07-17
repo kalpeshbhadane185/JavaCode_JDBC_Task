@@ -37,7 +37,7 @@ public class InsertRecrdsInDB
 					StringBuilder createTableQuery = new StringBuilder("CREATE TABLE " + tableName + " (");
 
 					for (String column : header)
-					{
+					{ 
 						createTableQuery.append(column).append(" VARCHAR(255), ");
 					}
 					createTableQuery.setLength(createTableQuery.length() - 2);

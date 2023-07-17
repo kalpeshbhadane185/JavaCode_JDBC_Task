@@ -13,6 +13,6 @@ public class CSV_Utility_Logger
 	{
 		PropertyConfigurator.configure(
 				System.getProperty("user.home") + System.getProperty("file.separator") 
-				+ "/log4j.properties");
+				+ "/log4j.properties"); 
 	}
 }

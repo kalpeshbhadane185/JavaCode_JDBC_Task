@@ -52,7 +52,7 @@ public class CsvMerge
 					break;
 				}
 			}
-			mergedColName = App.map.get("column_name");
+			mergedColName = App.map.get("column_name"); 
 
 			for (String filePath : filesList)
 			{
@@ -222,7 +222,7 @@ public class CsvMerge
 				}
 				writer.newLine();
 			}
-			CSV_Utility_Logger.logger.info(" file has successfully merge at this path\n"+outputFileName);
+			CSV_Utility_Logger.logger.info(" file has successfully merge at this path\n" + outputFileName);
 		}
 		else
 		{

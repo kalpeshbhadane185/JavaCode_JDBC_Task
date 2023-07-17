@@ -23,7 +23,7 @@ public class DB_Connection
 			properties.load(new FileInputStream(
 					System.getProperty("user.home") + System.getProperty("file.separator") + "config.properties"));
 
-		}
+		} 
 		catch (IOException e)
 		{
 			CSV_Utility_Logger.logger.log(Level.ERROR, "IOException :: ", e);
