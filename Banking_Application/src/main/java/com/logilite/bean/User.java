@@ -11,12 +11,11 @@ public class User
 	}
 	public int user_id;
 	public String username;
-//	public String firstname
 	public String password;
 	public String user_type;
-	public Integer account_no;
+	public Long account_no;
 	public String email;
-	public Integer mob_no;
+	public Long mob_no;
 	public String gender;
 	public int parent_id;
 	
@@ -52,11 +51,11 @@ public class User
 	{
 		this.user_type = user_type;
 	}
-	public Integer getAccount_no()
+	public Long getAccount_no()
 	{
 		return account_no;
 	}
-	public void setAccount_no(Integer account_no)
+	public void setAccount_no(Long account_no)
 	{
 		this.account_no = account_no;
 	}
@@ -68,11 +67,11 @@ public class User
 	{
 		this.email = email;
 	}
-	public Integer getMob_no()
+	public Long getMob_no()
 	{
 		return mob_no;
 	}
-	public void setMob_no(Integer mob_no)
+	public void setMob_no(Long mob_no)
 	{
 		this.mob_no = mob_no;
 	}

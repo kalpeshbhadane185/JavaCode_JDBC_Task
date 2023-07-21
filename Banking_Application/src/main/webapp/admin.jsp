@@ -57,12 +57,13 @@
 				name="gender" value="Male" required /> Male <input type="radio"
 				id="gender" name="gender" value="Female" required /> Female<br />
 			<br /> <label for="email">Email:</label> <input type="email"
-				id="email" name="email" required /><br /> <br /> <label
-				for="userType">User Type:</label> <select id="userType"
-				name="userType" required onchange="toggleAccountNoField()">
+				id="email" name="email" required /><br /> <br /> 
+				<label for="userType">User Type:</label> 
+				<select id="userType" name="userType" required onchange="toggleAccountNoField()">
 				<option value="Customer">Customer</option>
 				<option value="Admin">Admin</option>
-			</select><br /> <br /> <label for="accountNo">Account Number:</label> <input
+			</select>
+			<br /> <br /> <label for="accountNo">Account Number:</label> <input
 				type="text" id="accountNo" name="accountNo" required /><br /> <br />
 			<input type="submit" name="Submit Customer Form" value="Register" />
 		</form>

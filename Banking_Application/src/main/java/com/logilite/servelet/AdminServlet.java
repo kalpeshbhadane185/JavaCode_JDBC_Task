@@ -26,7 +26,6 @@ public class AdminServlet extends HttpServlet
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-
 		User user = new User();
 		String buttonName = request.getParameter("Submit Customer Form");
 
@@ -37,15 +36,13 @@ public class AdminServlet extends HttpServlet
 				user.setUsername(request.getParameter("username"));
 				user.setPassword(request.getParameter("password"));
 
-				String parameter = request.getParameter("mobileno");
-				Integer intNo = Integer.parseInt(parameter);
+				Long intNo = Long.parseLong(request.getParameter("mobileno"));
 				user.setMob_no(intNo);
 
 				user.setGender(request.getParameter("gender"));
 				user.setEmail(request.getParameter("email"));
 				user.setUser_type(request.getParameter("userType"));
-				parameter = request.getParameter("accountNo");
-				intNo = Integer.parseInt(parameter);
+				intNo = Long.parseLong(request.getParameter("accountNo"));
 				user.setAccount_no(intNo);
 
 				String query = "INSERT INTO bank_user (username, password, user_type,"
@@ -57,9 +54,9 @@ public class AdminServlet extends HttpServlet
 					pStatement.setString(1, user.getUsername());
 					pStatement.setString(2, user.getPassword());
 					pStatement.setString(3, user.getUser_type());
-					pStatement.setInt(4, user.getAccount_no());
+					pStatement.setLong(4, user.getAccount_no());
 					pStatement.setString(5, user.getEmail());
-					pStatement.setInt(6, user.getMob_no());
+					pStatement.setLong(6, user.getMob_no());
 					pStatement.setString(7, user.getGender());
 
 					if (LoginServlet.parent_id != -1)
@@ -97,15 +94,14 @@ public class AdminServlet extends HttpServlet
 		String query = "select username, account_no, mobile_no, gender from bank_user where parent_id="
 				+ LoginServlet.parent_id + ";";
 		Connection connection = Database_Connectivity.createDBConnection();
-
 		PreparedStatement prepareStatement = connection.prepareStatement(query);
 		ResultSet rs = prepareStatement.executeQuery();
 		while (rs.next())
 		{
 			user = new User();
 			user.setUsername(rs.getString(1));
-			user.setAccount_no(rs.getInt(2));
-			user.setMob_no(rs.getInt(3));
+			user.setAccount_no(rs.getLong(2));
+			user.setMob_no(rs.getLong(3));
 			user.setGender(rs.getString(4));
 			list.add(user);
 		}

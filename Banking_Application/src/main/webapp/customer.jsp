@@ -8,36 +8,38 @@
 <title>My Page</title>
 </head>
 <body>
-<%-- 	<jsp:useBean id="myServlet" class="com.logilite.servelet.LoginServlet" />
- --%>		<h2>Customer Details</h2>
-
+	<h2>Customer Details</h2>
 	<div align="left">
-
 		<label>Name :- ${username}</label> <br> <br> <label>Account
-			Number :- ${AccountNo}</label> <br> <br> <label>Mob No :- ${MobileNo}</label> <br> <br> <label>Email :- ${Email}</label> <br>
-		<br> <label>Gender :- ${Gender}</label> <br> <br>
+			Number :- ${AccountNo}</label> <br> <br> <label>Mob No :-
+			${MobileNo}</label> <br> <br> <label>Email :- ${Email}</label> <br>
+		<br> <label>Gender :- ${Gender}</label> <br> <br> <label>Account
+			Balance :- ${AccountBalance}</label> <br> <br>
 	</div>
 	<div>
-		<form action="loginServlet" method="get">
-			<input type="button" value="AccountBalance" name="balance"> :- ${AccountBalance}
-		</form>
-		<br> <br>
-	</div>
-	
-	<div>
-		<form action="loginServlet" method="get">
-		
-		<label
-				for="transaction type">transaction Type:</label> 
-				<select id="transaction type" name="transaction type" >
+		<form action="TransactionServlet" method="post">
+			<label for="transaction type">transaction Type:</label> <select
+				id="transaction type" name="transaction_type">
 				<option value="Credit">Credit</option>
 				<option value="Debit">Debit</option>
-			</select>
-			<label>Amount </label>
-			<input type="number">
-			<input type="button" value="dotransaction" name="transaction">
+			</select> <label>Amount </label> <input type="number" name="amount" required>
+			<input type="submit" value="submit" name="transaction">
 		</form>
 	</div>
+
+	<div>
+		<form action="TransactionServlet" method="get">
+			<input type="submit" value="statement" name="transactionDetails">
+		</form>
+	</div>
+
+	<div>
+		<input type="button" value="Back"
+			onclick="window.location.href='login.jsp'" />
+	</div>
+
+	<div id="successMessage" style="display: none;">Transaction
+		successful!</div>
 
 </body>
 </html>

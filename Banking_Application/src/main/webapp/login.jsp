@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Login Page</title>
+<title>Login</title>
 </head>
 <body>
 
