@@ -1,13 +1,14 @@
 package com.logilite.bean;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class Transaction_Activity
 {
 
 	public int transaction_id;
-	public Date transaction_date;
+	public Timestamp transaction_date;
 	public String transaction_type;
 	public double accountBalance;
 	public double ammount;
@@ -21,11 +22,11 @@ public class Transaction_Activity
 	{
 		this.transaction_id = transaction_id;
 	}
-	public Date getTransaction_date()
+	public Timestamp getTransaction_date()
 	{
 		return transaction_date;
 	}
-	public void setTransaction_date(Date transaction_date)
+	public void setTransaction_date(Timestamp transaction_date)
 	{
 		this.transaction_date = transaction_date;
 	}

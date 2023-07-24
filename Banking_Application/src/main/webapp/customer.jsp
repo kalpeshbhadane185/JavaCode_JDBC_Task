@@ -17,7 +17,7 @@
 			Balance :- ${AccountBalance}</label> <br> <br>
 	</div>
 	<div>
-		<form action="TransactionServlet" method="post">
+		<form action="loginServlet" method="get">
 			<label for="transaction type">transaction Type:</label> <select
 				id="transaction type" name="transaction_type">
 				<option value="Credit">Credit</option>
@@ -33,10 +33,14 @@
 		</form>
 	</div>
 
-	<div>
+	<form action=loginServlet method=get>
+		<button type=button">Back  Page</button>
+	</form>
+
+	<!-- <div>
 		<input type="button" value="Back"
 			onclick="window.location.href='login.jsp'" />
-	</div>
+	</div> -->
 
 	<div id="successMessage" style="display: none;">Transaction
 		successful!</div>

@@ -42,7 +42,7 @@
 </head>
 <body>
 	<button onclick="toggleForm('createUserForm')">Create User</button>
-	 	<button onclick="toggleForm('customerListForm')">Customer List</button>
+	<!-- <button onclick="toggleForm('customerListForm')">Customer List</button>  -->
 	<!-- 	<button onclick="toggleForm('transactionForm')">Customer List</button> -->
 
 	<div id="createUserForm" class="form-container">
@@ -57,25 +57,29 @@
 				name="gender" value="Male" required /> Male <input type="radio"
 				id="gender" name="gender" value="Female" required /> Female<br />
 			<br /> <label for="email">Email:</label> <input type="email"
-				id="email" name="email" required /><br /> <br /> 
-				<label for="userType">User Type:</label> 
-				<select id="userType" name="userType" required onchange="toggleAccountNoField()">
+				id="email" name="email" required /><br /> <br /> <label
+				for="userType">User Type:</label> <select id="userType"
+				name="userType" required onchange="toggleAccountNoField()">
 				<option value="Customer">Customer</option>
 				<option value="Admin">Admin</option>
-			</select>
-			<br /> <br /> <label for="accountNo">Account Number:</label> <input
-				type="text" id="accountNo" name="accountNo" required /><br /> <br />
-			<input type="submit" name="Submit Customer Form" value="Register" />
+			</select> <br /> <br /> <!-- <label for="accountNo">Account Number:</label> <input
+				type="text" id="accountNo" name="accountNo" required /><br /> <br /> -->
+			<input type="submit" name="admin" value="Register" />
 		</form>
 	</div>
 
-	<div id="customerListForm" class="form-container">
+	<!-- <div id="customerListForm" class="form-container">
 		<h2>Customer List</h2>
 		<form action="AdminServlet" method="get">
 			<input type="submit" value="getCustomerList" name="CustomerList" />
 		</form>
-		<input type="button" value="Back"
+	</div> -->
+<br>
+	<form action="AdminServlet" method="get">
+		<input type="submit" name="admin" value="customerlist" />
+	</form>
+
+	<input type="button" value="Back"
 		onclick="window.location.href='admin.jsp'" />
-	</div>
 </body>
 </html>

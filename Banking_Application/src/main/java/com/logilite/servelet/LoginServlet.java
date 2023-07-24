@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
+import java.sql.Timestamp;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,122 +14,49 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Level;
 
 import com.logilite.bean.Transaction_Activity;
 import com.logilite.bean.User;
 import com.logilite.dataBase.Database_Connectivity;
+import com.logilite.logger.MyLogger;
 
 @WebServlet("/loginServlet")
 public class LoginServlet extends HttpServlet
 {
-	public static Transaction_Activity	activity			= new Transaction_Activity();
+	// public static Transaction_Activity activity = new Transaction_Activity();
 
-	private static final long			serialVersionUID	= 1L;
-	public static int					parent_id			= -1;
+	private static final long	serialVersionUID	= 1L;
+	public static int			parent_id			= -1;
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
 		User user = new User();
-		user.setUsername(username);
-		user.setPassword(password);
 		user = authenticated(username, password);
-		System.out.println(user.getUser_type());
+
 		if (user != null)
 		{
+			HttpSession session = request.getSession();
+			session.setAttribute("user", user);
+			System.out.println(user.getUser_type());
+
 			if (user.getUser_type().equalsIgnoreCase("Admin"))
 			{
 				response.sendRedirect("admin.jsp");
 			}
 			else
 			{
-				processCustomerPage(request, response, user);
+				processCustomerPage(request, response);
 			}
 		}
 		else
 		{
 			request.setAttribute("errorMessage", "Incorrect username or password.");
 			request.getRequestDispatcher("login.jsp").forward(request, response);
-		}
-	}
-
-	public User kal(User user)
-	{
-		try
-		{
-			Connection createDBConnection = Database_Connectivity.createDBConnection();
-			String query = "select * from bank_user where username='" + user.getUsername() + "'";
-			PreparedStatement statement = createDBConnection.prepareStatement(query);
-			ResultSet rs = statement.executeQuery();
-			while (rs.next())
-			{
-				user.setUsername(rs.getString(2));
-				user.setUser_type(rs.getString(4));
-				user.setAccount_no(rs.getLong(5));
-				user.setMob_no(rs.getLong(7));
-				user.setEmail(rs.getString(6));
-				user.setGender(rs.getString(8));
-			}
-
-			String query2 = "select account_balance from tr_activity where user_id=" + user.getUser_id()
-					+ " order by tr_date desc limit 1";
-			PreparedStatement statement2 = createDBConnection.prepareStatement(query2);
-			ResultSet rs2 = statement2.executeQuery();
-			if (rs2.next())
-			{
-				activity.setAccountBalance(rs2.getDouble(1));
-				// break;
-			}
-			return user;
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		return null;
-
-	}
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-	{
-		try
-		{
-			User user = new User();
-			Connection createDBConnection = Database_Connectivity.createDBConnection();
-			Transaction_Activity activity = new Transaction_Activity();
-			String query = "select * from bank_user where username='" + user.getUsername() + "'";
-			PreparedStatement statement = createDBConnection.prepareStatement(query);
-			ResultSet rs = statement.executeQuery();
-			while (rs.next())
-			{
-				user.setUsername(rs.getString(2));
-				user.setAccount_no(rs.getLong(5));
-				user.setMob_no(rs.getLong(7));
-				user.setEmail(rs.getString(6));
-				user.setGender(rs.getString(8));
-			}
-			request.setAttribute("username", user.getUsername());
-			request.setAttribute("AccountNo", user.getAccount_no());
-			request.setAttribute("MobileNo", user.getMob_no());
-			request.setAttribute("Email", user.getEmail());
-			request.setAttribute("Gender", user.getGender());
-
-			String query2 = "select account_balance from tr_activity where user_id=" + user.getUser_id()
-					+ " order by tr_date desc";
-			PreparedStatement statement2 = createDBConnection.prepareStatement(query2);
-			ResultSet rs2 = statement2.executeQuery();
-			while (rs2.next())
-			{
-				activity.setAccountBalance(rs2.getDouble(1));
-			}
-			request.setAttribute("AccountBalance", activity.getAccountBalance());
-			RequestDispatcher dispatcher = request.getRequestDispatcher("customer.jsp");
-			dispatcher.forward(request, response);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
 		}
 	}
 
@@ -142,47 +69,114 @@ public class LoginServlet extends HttpServlet
 			if (createDBConnection != null)
 			{
 				Statement statement = createDBConnection.createStatement();
-				String query = "select * from bank_user where username = '"+username+"' AND password = '"
-						+ password + "'";
+				String query = "select * from bank_user where username = '" + username + "' AND password = '" + password
+						+ "'";
 				ResultSet rs = statement.executeQuery(query);
 				while (rs.next())
 				{
-					user.setUser_type(rs.getString("user_type"));;
 					user.setUser_id(rs.getInt("user_id"));
+					user.setUsername(rs.getString("username"));
+					user.setUser_type(rs.getString("user_type"));
 					user.setAccount_no(rs.getLong("account_no"));
 					user.setMob_no(rs.getLong("mobile_no"));
 					user.setEmail(rs.getString("email"));
 					user.setGender(rs.getString("gender"));
-					parent_id = rs.getInt("parent_id");
+					user.setParent_id(rs.getInt("parent_id"));
+					return user;
 				}
 			}
-			return user;
+			return null;
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
 			return null;
 		}
 	}
 
-	public void processCustomerPage(HttpServletRequest request, HttpServletResponse response, User user)
+	public void processCustomerPage(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
-		User customer = kal(user);
-		request.setAttribute("username", customer.getUsername());
-		request.setAttribute("AccountNo", customer.getAccount_no());
-		request.setAttribute("MobileNo", customer.getMob_no());
-		request.setAttribute("Email", customer.getEmail());
-		request.setAttribute("Gender", customer.getGender());
-		request.setAttribute("AccountBalance", activity.getAccountBalance());
-		
-		RequestDispatcher dispatcher = request.getRequestDispatcher("customer.jsp");
-		dispatcher.forward(request, response);
+		try
+		{
+			Transaction_Activity activity = new Transaction_Activity();
+			HttpSession session = request.getSession();
+			User customer = (User) session.getAttribute("user");
+
+			Connection createDBConnection = Database_Connectivity.createDBConnection();
+			String query = "select * from bank_user b join tr_activity t on t.user_id = b.user_id "
+					+ "where t.user_id = " + customer.getUser_id() + " order by  tr_date desc";
+			PreparedStatement statement = createDBConnection.prepareStatement(query);
+
+			ResultSet rs = statement.executeQuery();
+			if (rs.next())
+			{
+				activity.setAccountBalance(rs.getDouble("account_balance"));
+			}
+			session.setAttribute("tr_activity", activity);
+
+			request.setAttribute("username", customer.getUsername());
+			request.setAttribute("AccountNo", customer.getAccount_no());
+			request.setAttribute("MobileNo", customer.getMob_no());
+			request.setAttribute("Email", customer.getEmail());
+			request.setAttribute("Gender", customer.getGender());
+			request.setAttribute("AccountBalance", activity.getAccountBalance());
+
+			RequestDispatcher dispatcher = request.getRequestDispatcher("customer.jsp");
+			dispatcher.forward(request, response);
+		}
+		catch (SQLException e)
+		{
+			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+		}
+	}
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+	{
+		try
+		{
+			HttpSession session = request.getSession();
+			User user = (User) session.getAttribute("user");
+			Transaction_Activity activity = (Transaction_Activity) session.getAttribute("tr_activity");
+
+			String buttonName = request.getParameter("transaction");
+
+			Connection createDBConnection = Database_Connectivity.createDBConnection();
+			activity.setTransaction_type(request.getParameter("transaction_type"));
+			activity.setAmmount(Double.parseDouble(request.getParameter("amount")));
+			
+			String query = "insert into tr_activity (tr_Date, tr_type, account_balance, amount, user_id) values(?,?,?,?,?);";
+
+			Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
+			if (buttonName.equalsIgnoreCase("submit"))
+			{
+
+				PreparedStatement pStatement = createDBConnection.prepareStatement(query);
+				pStatement.setTimestamp(1, currentTimestamp);
+				pStatement.setString(2, activity.getTransaction_type());
+				double accountBalance = activity.getAccountBalance();
+				if (activity.getTransaction_type().equalsIgnoreCase("Credit"))
+				{
+					accountBalance = accountBalance + activity.getAmmount();
+				}
+				else
+				{
+					accountBalance = accountBalance - activity.getAmmount();
+				}
+				pStatement.setDouble(3, accountBalance);
+				pStatement.setDouble(4, activity.getAmmount());
+				pStatement.setInt(5, user.getUser_id());
+				pStatement.executeUpdate();
+				processCustomerPage(request, response);
+			}
+		}
+		catch (Exception e)
+		{
+			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+		}
 	}
 }
-//1. write create tables queries in database server required for project
-//2. create login page fields in jsp page
-//3. write a servlet code for login page
-//
-
-
+// 1. write create tables queries in database server required for project
+// 2. create login page fields in jsp page
+// 3. write a servlet code for login page
