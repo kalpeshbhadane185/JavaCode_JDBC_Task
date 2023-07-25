@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -82,7 +83,7 @@ public class AdminServlet extends HttpServlet
 		}
 	}
 
-	private List<User> fetchUserData(User user) throws SQLException
+	public List<User> fetchUserData(User user) throws SQLException
 	{
 		List<User> list = new ArrayList<>();
 		String query = "select * from bank_user where parent_id=" + user.getUser_id() + ";";
@@ -102,47 +103,26 @@ public class AdminServlet extends HttpServlet
 		}
 		return list;
 	}
+	
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	    HttpSession session = request.getSession();
+	    User user = (User) session.getAttribute("user");
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-	{
-		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
-		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		try
-		{
-			String handler = request.getParameter("admin");
-			if (handler.equals("customerlist"))
-			{
-				List<User> userList = null;
-				userList = fetchUserData(user);
-				out.print("<table border='1' width='20%' ");
-				out.print("<tr><th>User Name</th><th>Account No</th><th>Mobile No</th>" + "<th>Gender</th>"
-						+ "<th>Email</th><th>Delete</th></tr>");
-				for (User customer : userList)
-				{
-					out.print("<tr><th>" + customer.getUsername() + "</th>");
-					out.print("<th>" + customer.getAccount_no() + "</th>");
-					out.print("<th>" + customer.getMob_no() + "</th>");
-					out.print("<th>" + customer.getGender() + "</th>");
-					out.print("<th>" + customer.getEmail() + "</th>");
-					out.print("<th><form action=\"CustomerServlet\" method=\"post\">");
-					out.print("<input type=\"hidden\" name=\"operation\" value=\"delete\">");
-					out.print("<input type=\"hidden\" name=\"userId\" value=\"" + customer.getUser_id() + "\">");
-					out.print("<button type=\"submit\">Delete</button>");
-					out.print("</form>");
-					out.print("</th></tr>");
-				}
-				out.print("</table>");
-				out.print("<br><button type=\"submit\" name=\"back\">\n" + "<a href=\"admin.jsp\">Back \n"
-						+ "	</button>");
-			}
-		}
-		catch (SQLException e)
-		{
-			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
-		}
+	    try {
+	        String handler = request.getParameter("admin");
+	        if (handler.equals("customerlist")) {
+	            List<User> userList = null;
+	            userList = fetchUserData(user);
+	            request.setAttribute("userList", userList);
+
+	            RequestDispatcher dispatcher = request.getRequestDispatcher("customerList.jsp");
+	            dispatcher.forward(request, response);
+	        }
+	    } catch (SQLException e) {
+	        MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+	    }
 	}
+
 
 	private static long generateRandom12DigitNumber()
 	{

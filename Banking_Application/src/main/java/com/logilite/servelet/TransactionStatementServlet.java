@@ -31,56 +31,34 @@ public class TransactionStatementServlet extends HttpServlet
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-	{
-		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
-
-		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		String buttonName = request.getParameter("transactionDetails");
-		if (buttonName.equals("statement"))
-		{
-			List<Transaction_Activity> activity = null;
-			try
-			{
-				activity = fetchUserDataFromDatabase(user);
-				out.print("<table border='1' width='60%' ");
-				out.print("<tr><th>Sr. no</th><th>Date</th><th>Account Balance</th><th>Ammount</th>"
-						+ "<th>Transaction Type</th></tr>");
-				int count = 1;
-				for (Transaction_Activity statement : activity)
-				{
-					out.print("<tr><th>" + count++ + "</th>");
-					out.print("<th>" + statement.getTransaction_date() + "</th>");
-					out.print("<th>" + statement.getAccountBalance() + "</th>");
-					out.print("<th>" + statement.getAmmount() + "</th>");
-					out.print("<th>" + statement.getTransaction_type() + "</th></tr>");
-				}
-				out.print("</table>");
-				out.print(
-						"<br><button type=\"button\" onclick=\"window.location.href='customer.jsp';\">Back to Customer Page</button>");
-				out.print("<form action=\"loginServlet\" method=\"get\">");
-				out.print("<input type=\"hidden\" name=\"operation\" value=\"delete\">");
-				out.print("<button type=\"submit\">Delete</button>");
-				out.print("</form>");
-			}
-			catch (Exception e)
-			{
-				MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
-			}
-		}
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	    HttpSession session = request.getSession();
+	    User user = (User) session.getAttribute("user");
+	    String buttonName = request.getParameter("transactionDetails");
+	    
+	    if (buttonName.equals("statement")) {
+	        List<Transaction_Activity> activity = null;
+	        try {
+	            activity = fetchUserDataFromDatabase(user);
+	            request.setAttribute("activity", activity);
+	        } catch (Exception e) {
+	            MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+	        }
+	        
+	        RequestDispatcher dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");
+	        dispatcher.forward(request, response);
+	    }
 	}
+
 
 	private List<Transaction_Activity> fetchUserDataFromDatabase(User user)
 	{
 		try
 		{
 			List<Transaction_Activity> list = new ArrayList<>();
-			// Transaction_Activity activity = new Transaction_Activity();
 
 			Connection connection = Database_Connectivity.createDBConnection();
-			String query = "select * from tr_activity " + "where user_id = " + user.getUser_id()
+			String query = "select * from tr_activity where user_id = " + user.getUser_id()
 					+ " order by  tr_date desc";
 			PreparedStatement prepareStatement = connection.prepareStatement(query);
 
@@ -137,22 +115,14 @@ public class TransactionStatementServlet extends HttpServlet
 				}
 				else
 				{
-					accountBalance = accountBalance - activity.getAmmount();
+					if (accountBalance >= 500 && activity.getAmmount()<= accountBalance) {
+						accountBalance = accountBalance - activity.getAmmount();
+					}
 				}
 				pStatement.setDouble(3, accountBalance);
 				pStatement.setDouble(4, activity.getAmmount());
 				pStatement.setInt(5, user.getUser_id());
-				System.out.println("Hello Kalpesh");
-				int executeUpdate = pStatement.executeUpdate();
-
-				if (executeUpdate != 0)
-				{
-
-				}
-				else
-				{
-					System.out.println("Something wrong");
-				}
+				pStatement.executeUpdate();
 
 			}
 			catch (SQLException e)

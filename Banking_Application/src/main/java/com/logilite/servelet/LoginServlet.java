@@ -26,10 +26,7 @@ import com.logilite.logger.MyLogger;
 @WebServlet("/loginServlet")
 public class LoginServlet extends HttpServlet
 {
-	// public static Transaction_Activity activity = new Transaction_Activity();
-
 	private static final long	serialVersionUID	= 1L;
-	public static int			parent_id			= -1;
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
@@ -139,35 +136,68 @@ public class LoginServlet extends HttpServlet
 			User user = (User) session.getAttribute("user");
 			Transaction_Activity activity = (Transaction_Activity) session.getAttribute("tr_activity");
 
-			String buttonName = request.getParameter("transaction");
+			String transactionHandler = request.getParameter("transaction");
 
 			Connection createDBConnection = Database_Connectivity.createDBConnection();
 			activity.setTransaction_type(request.getParameter("transaction_type"));
 			activity.setAmmount(Double.parseDouble(request.getParameter("amount")));
-			
+
 			String query = "insert into tr_activity (tr_Date, tr_type, account_balance, amount, user_id) values(?,?,?,?,?);";
 
 			Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 
-			if (buttonName.equalsIgnoreCase("submit"))
+			if (transactionHandler.equalsIgnoreCase("submit"))
 			{
 
 				PreparedStatement pStatement = createDBConnection.prepareStatement(query);
 				pStatement.setTimestamp(1, currentTimestamp);
 				pStatement.setString(2, activity.getTransaction_type());
 				double accountBalance = activity.getAccountBalance();
+				boolean queryExecute = false;
 				if (activity.getTransaction_type().equalsIgnoreCase("Credit"))
 				{
-					accountBalance = accountBalance + activity.getAmmount();
+					if (activity.getAmmount() <= 200000)
+					{
+						accountBalance = accountBalance + activity.getAmmount();
+						queryExecute = true;
+					}
+					else
+					{
+						request.setAttribute("errorMessage", "you can credit the maximum 200000 amount in your account"
+								+ " and your credit amount is " + activity.getAmmount());
+					}
 				}
 				else
 				{
-					accountBalance = accountBalance - activity.getAmmount();
+					if (accountBalance >= 500 && activity.getAmmount() <= accountBalance)
+					{
+						double temp = accountBalance;
+						accountBalance = accountBalance - activity.getAmmount();
+						if (accountBalance >= 500)
+						{
+							queryExecute = true;
+						}
+						else
+						{
+							temp = temp - 500;
+							request.setAttribute("errorMessage", "your withdraw amount is " + activity.getAmmount()
+									+ "\n you can withdraw the max amount from your account " + temp);
+						}
+					}
+					else
+					{
+						request.setAttribute("errorMessage",
+								"you can't withdraw amount because your minimum balance is low...balance is "
+										+ accountBalance);
+					}
 				}
 				pStatement.setDouble(3, accountBalance);
 				pStatement.setDouble(4, activity.getAmmount());
 				pStatement.setInt(5, user.getUser_id());
-				pStatement.executeUpdate();
+				if (queryExecute)
+				{
+					pStatement.executeUpdate();
+				}
 				processCustomerPage(request, response);
 			}
 		}

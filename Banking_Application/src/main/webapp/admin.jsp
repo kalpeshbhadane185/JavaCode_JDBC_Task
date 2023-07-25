@@ -10,6 +10,12 @@
 .form-container {
 	display: none;
 }
+
+.logout-button {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+}
 </style>
 <script>
 	function toggleAccountNoField() {
@@ -41,6 +47,12 @@
 </script>
 </head>
 <body>
+
+<h2>Welcome Admin</h2>
+	<div class="logout-button">
+		<input type="button" value="Logout"
+			onclick="window.location.href='login.jsp'" />
+	</div>
 	<button onclick="toggleForm('createUserForm')">Create User</button>
 	<!-- <button onclick="toggleForm('customerListForm')">Customer List</button>  -->
 	<!-- 	<button onclick="toggleForm('transactionForm')">Customer List</button> -->
@@ -62,7 +74,8 @@
 				name="userType" required onchange="toggleAccountNoField()">
 				<option value="Customer">Customer</option>
 				<option value="Admin">Admin</option>
-			</select> <br /> <br /> <!-- <label for="accountNo">Account Number:</label> <input
+			</select> <br /> <br />
+			<!-- <label for="accountNo">Account Number:</label> <input
 				type="text" id="accountNo" name="accountNo" required /><br /> <br /> -->
 			<input type="submit" name="admin" value="Register" />
 		</form>
@@ -74,12 +87,13 @@
 			<input type="submit" value="getCustomerList" name="CustomerList" />
 		</form>
 	</div> -->
-<br>
+	<br>
+	<br>
 	<form action="AdminServlet" method="get">
 		<input type="submit" name="admin" value="customerlist" />
 	</form>
 
-	<input type="button" value="Back"
-		onclick="window.location.href='admin.jsp'" />
+	<!-- <input type="button" value="Back"
+		onclick="window.location.href='admin.jsp'" /> -->
 </body>
 </html>

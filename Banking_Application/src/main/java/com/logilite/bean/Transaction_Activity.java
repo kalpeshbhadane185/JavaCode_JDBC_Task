@@ -54,4 +54,17 @@ public class Transaction_Activity
 	{
 		this.ammount = ammount;
 	}
+	@Override
+	public String toString()
+	{
+		return "Transaction_Activity [transaction_id=" + transaction_id + ", transaction_date=" + transaction_date
+				+ ", transaction_type=" + transaction_type + ", accountBalance=" + accountBalance + ", ammount="
+				+ ammount + ", user_id=" + user_id + "]";
+	}
+	public Transaction_Activity()
+	{
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
 }
