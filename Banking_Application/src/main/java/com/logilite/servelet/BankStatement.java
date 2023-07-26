@@ -22,6 +22,7 @@ import com.logilite.dataBase.Database_Connectivity;
 public class BankStatement extends HttpServlet
 {
 	private static final long serialVersionUID = 1L;
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
@@ -32,26 +33,11 @@ public class BankStatement extends HttpServlet
 			String userId = request.getParameter("userId");
 			tr_activity = fetchUserTransactionData(userId);
 		}
-		
-		for (Transaction_Activity transaction_Activity : tr_activity)
-		{
-			System.out.println(transaction_Activity.toString());
-		}
 
 		request.setAttribute("tr_activity", tr_activity);
-		
 
-		RequestDispatcher dispatcher;
-		
-		dispatcher = request.getRequestDispatcher("ad_bankstatement.jsp");
-		System.out.println(dispatcher.toString());
+		RequestDispatcher dispatcher = request.getRequestDispatcher("ad_bankstatement.jsp");
 		dispatcher.forward(request, response);
-
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-	{
 	}
 
 	public List<Transaction_Activity> fetchUserTransactionData(String userId)
@@ -59,7 +45,7 @@ public class BankStatement extends HttpServlet
 		try
 		{
 			List<Transaction_Activity> list = new ArrayList<>();
-			String query = "select * from tr_activity where user_id=" + userId + ";";
+			String query = "select * from tr_activity where user_id=" + userId + " order by tr_date desc ;";
 			Connection connection = Database_Connectivity.createDBConnection();
 			PreparedStatement prepareStatement = connection.prepareStatement(query);
 			ResultSet rs = prepareStatement.executeQuery();
@@ -79,5 +65,10 @@ public class BankStatement extends HttpServlet
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
 	}
 }

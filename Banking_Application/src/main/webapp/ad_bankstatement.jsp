@@ -8,41 +8,90 @@
 <meta charset="UTF-8">
 <title>Bank Statement</title>
 <style>
-    /* CSS style to position the logout button */
-    .logout-button {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-    }
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f1f1f1;
+	margin: 0;
+	padding: 0;
+}
+
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+.logout-button {
+	position: absolute;
+	top: 8px;
+	right: 20px;
+	background-color: #4CAF50;
+	color: gray;
+	border: none;
+	padding: 2px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.logout-button:hover {
+	background-color: #45a049;
+}
+
+table {
+    width: 60%;
+    border-collapse: inherit;
+    margin: 20px auto; 
+}
+
+th, td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	text-align: center;
+}
+
+th {
+	background-color: #f2f2f2;
+}
+
+tr:hover {
+	background-color: #f2f2f2;
+}
+
+p {
+	text-align: center;
+	font-size: 18px;
+	color: #888888;
+	margin-top: 50px;
+}
 </style>
 </head>
 <body>
-<div class="logout-button">
-		<input type="button" value="Logout"
-			onclick="window.location.href='login.jsp'" />
-	</div>
-	<c:if test="${empty tr_activity}">
-		<p>No transactions found.</p>
-	</c:if>
-	<c:if test="${not empty tr_activity}">
-		<table border="1" width="70%">
-			<tr>
-				<th>Sr. No</th>
-				<th>Transaction Date</th>
-				<th>Amount</th>
-				<th>Transaction Type</th>
-			</tr>
-			<c:forEach items="${tr_activity}" var="transaction" varStatus="loop">
+	<div class="container">
+		<div class="logout-button">
+			<form action="loginServlet" method="get">
+				<input type="submit" name="logout" value="logout" />
+			</form>
+		</div>
+		<c:if test="${empty tr_activity}">
+			<p>No transactions found.</p>
+		</c:if>
+		<c:if test="${not empty tr_activity}">
+			<table>
 				<tr>
-					<td>${loop.count}</td>
-					<td>${transaction.transaction_date}</td>
-					<td>${transaction.ammount}</td>
-					<td>${transaction.transaction_type}</td>
+					<th>Transaction Date</th>
+					<th>Transaction Type</th>
+					<th>Amount</th>
 				</tr>
-			</c:forEach>
-		</table>
-		<br>
-	</c:if>
-	
+				<c:forEach items="${tr_activity}" var="transaction">
+					<tr>
+						<td>${transaction.transaction_date}</td>
+						<td>${transaction.transaction_type}</td>
+						<td>${transaction.ammount}</td>
+					</tr>
+				</c:forEach>
+			</table>
+			<br>
+		</c:if>
+	</div>
 </body>
 </html>

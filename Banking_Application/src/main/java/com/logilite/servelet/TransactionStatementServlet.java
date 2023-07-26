@@ -2,6 +2,7 @@ package com.logilite.servelet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.BufferUnderflowException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,38 +29,62 @@ import com.logilite.logger.MyLogger;
 @WebServlet("/TransactionServlet")
 public class TransactionStatementServlet extends HttpServlet
 {
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
+
+	public String				fromDate			= null;
+	public String				toDate				= null;
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    HttpSession session = request.getSession();
-	    User user = (User) session.getAttribute("user");
-	    String buttonName = request.getParameter("transactionDetails");
-	    
-	    if (buttonName.equals("statement")) {
-	        List<Transaction_Activity> activity = null;
-	        try {
-	            activity = fetchUserDataFromDatabase(user);
-	            request.setAttribute("activity", activity);
-	        } catch (Exception e) {
-	            MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
-	        }
-	        
-	        RequestDispatcher dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");
-	        dispatcher.forward(request, response);
-	    }
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		HttpSession session = request.getSession();
+		User user = (User) session.getAttribute("user");
+		String buttonName = request.getParameter("transactionDetails");
+		try
+
+		{
+			List<Transaction_Activity> activity = null;
+
+			request.getParameter("transactionDetails");
+			if (buttonName.equalsIgnoreCase("3"))
+			{
+				activity = fetchUserDataFromDatabase(user, buttonName);
+			}
+			request.setAttribute("activity", activity);
+
+			RequestDispatcher dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");
+			dispatcher.forward(request, response);
+		}
+		catch (Exception e)
+		{
+			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+		}
+
 	}
 
-
-	private List<Transaction_Activity> fetchUserDataFromDatabase(User user)
+	private List<Transaction_Activity> fetchUserDataFromDatabase(User user, String buttonName)
 	{
 		try
 		{
 			List<Transaction_Activity> list = new ArrayList<>();
 
 			Connection connection = Database_Connectivity.createDBConnection();
-			String query = "select * from tr_activity where user_id = " + user.getUser_id()
-					+ " order by  tr_date desc";
+			String query = "";
+			if (buttonName.equalsIgnoreCase("statement"))
+			{
+				query = "select * from tr_activity where user_id = " + user.getUser_id() + " order by  tr_date desc";
+			}
+			if (buttonName.equalsIgnoreCase("1"))
+			{
+				query = "select * from tr_activity where user_id = " + user.getUser_id()
+						+ " and DATE_TRUNC('month', tr_date) = DATE_TRUNC('month', CURRENT_DATE) order by  tr_date ";
+			}
+			if (buttonName.equalsIgnoreCase("2"))
+			{
+				query = "select * from tr_activity where user_id = " + user.getUser_id()
+						+ " and tr_date >= DATE_TRUNC('quarter', CURRENT_DATE) AND tr_date < DATE_TRUNC('quarter', CURRENT_DATE) "
+						+ "+ INTERVAL '3 months' order by tr_date";
+			}
 			PreparedStatement prepareStatement = connection.prepareStatement(query);
 
 			ResultSet rs = prepareStatement.executeQuery();
@@ -115,7 +140,8 @@ public class TransactionStatementServlet extends HttpServlet
 				}
 				else
 				{
-					if (accountBalance >= 500 && activity.getAmmount()<= accountBalance) {
+					if (accountBalance >= 500 && activity.getAmmount() <= accountBalance)
+					{
 						accountBalance = accountBalance - activity.getAmmount();
 					}
 				}

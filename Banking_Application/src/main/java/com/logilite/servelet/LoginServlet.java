@@ -6,11 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ import com.logilite.logger.MyLogger;
 @WebServlet("/loginServlet")
 public class LoginServlet extends HttpServlet
 {
-	private static final long	serialVersionUID	= 1L;
+	private static final long serialVersionUID = 1L;
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
@@ -91,7 +91,7 @@ public class LoginServlet extends HttpServlet
 		}
 	}
 
-	public void processCustomerPage(HttpServletRequest request, HttpServletResponse response)
+	public static void processCustomerPage(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
 		try
@@ -111,7 +111,6 @@ public class LoginServlet extends HttpServlet
 				activity.setAccountBalance(rs.getDouble("account_balance"));
 			}
 			session.setAttribute("tr_activity", activity);
-
 			request.setAttribute("username", customer.getUsername());
 			request.setAttribute("AccountNo", customer.getAccount_no());
 			request.setAttribute("MobileNo", customer.getMob_no());
@@ -127,86 +126,13 @@ public class LoginServlet extends HttpServlet
 			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
 		}
 	}
-
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-	{
-		try
-		{
-			HttpSession session = request.getSession();
-			User user = (User) session.getAttribute("user");
-			Transaction_Activity activity = (Transaction_Activity) session.getAttribute("tr_activity");
-
-			String transactionHandler = request.getParameter("transaction");
-
-			Connection createDBConnection = Database_Connectivity.createDBConnection();
-			activity.setTransaction_type(request.getParameter("transaction_type"));
-			activity.setAmmount(Double.parseDouble(request.getParameter("amount")));
-
-			String query = "insert into tr_activity (tr_Date, tr_type, account_balance, amount, user_id) values(?,?,?,?,?);";
-
-			Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-
-			if (transactionHandler.equalsIgnoreCase("submit"))
-			{
-
-				PreparedStatement pStatement = createDBConnection.prepareStatement(query);
-				pStatement.setTimestamp(1, currentTimestamp);
-				pStatement.setString(2, activity.getTransaction_type());
-				double accountBalance = activity.getAccountBalance();
-				boolean queryExecute = false;
-				if (activity.getTransaction_type().equalsIgnoreCase("Credit"))
-				{
-					if (activity.getAmmount() <= 200000)
-					{
-						accountBalance = accountBalance + activity.getAmmount();
-						queryExecute = true;
-					}
-					else
-					{
-						request.setAttribute("errorMessage", "you can credit the maximum 200000 amount in your account"
-								+ " and your credit amount is " + activity.getAmmount());
-					}
-				}
-				else
-				{
-					if (accountBalance >= 500 && activity.getAmmount() <= accountBalance)
-					{
-						double temp = accountBalance;
-						accountBalance = accountBalance - activity.getAmmount();
-						if (accountBalance >= 500)
-						{
-							queryExecute = true;
-						}
-						else
-						{
-							temp = temp - 500;
-							request.setAttribute("errorMessage", "your withdraw amount is " + activity.getAmmount()
-									+ "\n you can withdraw the max amount from your account " + temp);
-						}
-					}
-					else
-					{
-						request.setAttribute("errorMessage",
-								"you can't withdraw amount because your minimum balance is low...balance is "
-										+ accountBalance);
-					}
-				}
-				pStatement.setDouble(3, accountBalance);
-				pStatement.setDouble(4, activity.getAmmount());
-				pStatement.setInt(5, user.getUser_id());
-				if (queryExecute)
-				{
-					pStatement.executeUpdate();
-				}
-				processCustomerPage(request, response);
-			}
-		}
-		catch (Exception e)
-		{
-			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
-		}
-	}
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        response.sendRedirect("login.jsp"); 
+    }
 }
-// 1. write create tables queries in database server required for project
-// 2. create login page fields in jsp page
-// 3. write a servlet code for login page
