@@ -35,24 +35,30 @@ public class CustomerServlet extends HttpServlet
 			{
 				HttpSession session = request.getSession();
 				User user = (User) session.getAttribute("user");
-				if (user != null) {
-				Transaction_Activity activity = (Transaction_Activity) session.getAttribute("tr_activity");
-				activity.setTransaction_type(request.getParameter("transaction_type"));
-				activity.setAmmount(Double.parseDouble(request.getParameter("amount")));
+				
+				if (user == null)
+				{
+					RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
+					dispatcher.forward(request, response);
+					return;
+				}else {
+					
+					Transaction_Activity activity = (Transaction_Activity) session.getAttribute("tr_activity");
+					activity.setTransaction_type(request.getParameter("transaction_type"));
+					activity.setAmmount(Double.parseDouble(request.getParameter("amount")));
 
-				String insertTransactionActivity = transactionActivityCust.insertTransactionActivity(user, activity);
-				request.setAttribute("errorMessage", request.getParameter("transaction_type")+" "+insertTransactionActivity);
+					String insertTransactionActivity = transactionActivityCust.insertTransactionActivity(user,
+							activity);
+					request.setAttribute("errorMessage",
+							request.getParameter("transaction_type") + " " + insertTransactionActivity);
+				}
 			}
 			LoginServlet.processCustomerPage(request, response);
-			}else {
-				RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
-				dispatcher.forward(request, response);
-			}  
-		} 
+		}
 		catch (Exception e)
 		{
 			MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
-		} 
+		}
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -71,13 +77,13 @@ public class CustomerServlet extends HttpServlet
 				}
 				else
 				{
-					request.setAttribute("notDeleteMessage", "You can't delete this customer because his maintain "
-							+ "their account balance");
+					request.setAttribute("notDeleteMessage",
+							"You can't delete this customer because his maintain " + "their account balance");
 				}
 			}
 
 			User user = (User) session.getAttribute("user");
-			UserDAO dao  = new UserDAO();
+			UserDAO dao = new UserDAO();
 			List<User> userList = dao.fetchUserData(user);
 			request.setAttribute("userList", userList);
 
