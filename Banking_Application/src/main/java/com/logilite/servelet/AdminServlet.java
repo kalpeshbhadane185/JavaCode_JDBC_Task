@@ -1,7 +1,6 @@
 package com.logilite.servelet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,18 +20,21 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Level;
 
 import com.logilite.bean.User;
+import com.logilite.dao.UserDAO;
 import com.logilite.dataBase.Database_Connectivity;
 import com.logilite.logger.MyLogger;
 
 @WebServlet("/AdminServlet")
 public class AdminServlet extends HttpServlet
 {
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
+	private final UserDAO		userDAO				= new UserDAO();
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
+		HttpSession httpSession = request.getSession();
+		User user = (User) httpSession.getAttribute("user");
+		
 		String handler = request.getParameter("admin");
 		if (handler != null)
 		{
@@ -48,81 +50,42 @@ public class AdminServlet extends HttpServlet
 				user.setUser_type(request.getParameter("userType"));
 				user.setAccount_no(generateRandom12DigitNumber());
 
-				String query = "INSERT INTO bank_user (username, password, user_type,"
-						+ "account_no, email, mobile_no, gender, parent_id) VALUES(?,?,?,?,?,?,?,?);";
-				Connection cn = Database_Connectivity.createDBConnection();
-				try
+				boolean registrationSuccess = userDAO.registerUser(user);
+				if (registrationSuccess)
 				{
-					PreparedStatement pStatement = cn.prepareStatement(query);
-					pStatement.setString(1, user.getUsername());
-					pStatement.setString(2, user.getPassword());
-					pStatement.setString(3, user.getUser_type());
-					pStatement.setLong(4, user.getAccount_no());
-					pStatement.setString(5, user.getEmail());
-					pStatement.setLong(6, user.getMob_no());
-					pStatement.setString(7, user.getGender());
-					pStatement.setInt(8, user.getUser_id());
-
-					int executeUpdate = pStatement.executeUpdate();
-
-					if (executeUpdate != 0)
-					{
-						response.sendRedirect("admin.jsp");
-						System.out.println("Success");
-					}
-					else
-					{
-						MyLogger.logger.info("please check query");
-					}
+					response.sendRedirect("admin.jsp");
+					System.out.println("Success");
 				}
-				catch (SQLException e)
+				else
 				{
-					MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+					MyLogger.logger.info("please check query");
 				}
 			}
 		}
 	}
 
-	public List<User> fetchUserData(User user) throws SQLException
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 	{
-		List<User> list = new ArrayList<>();
-		String query = "select * from bank_user where parent_id=" + user.getUser_id() + ";";
-		Connection connection = Database_Connectivity.createDBConnection();
-		PreparedStatement prepareStatement = connection.prepareStatement(query);
-		ResultSet rs = prepareStatement.executeQuery();
-		while (rs.next())
+		HttpSession session = request.getSession();
+		User user = (User) session.getAttribute("user");
+
+		String handler = request.getParameter("admin");
+		if (handler.equals("customerlist"))
 		{
-			user = new User();
-			user.setUser_id(rs.getInt("user_id"));
-			user.setUsername(rs.getString("username"));
-			user.setAccount_no(rs.getLong("account_no"));
-			user.setMob_no(rs.getLong("mobile_no"));
-			user.setGender(rs.getString("gender"));
-			user.setEmail(rs.getString("email"));
-			list.add(user);
+			List<User> userList;
+			try
+			{
+				userList = userDAO.fetchUserData(user);
+				request.setAttribute("userList", userList);
+				RequestDispatcher dispatcher = request.getRequestDispatcher("customerList.jsp");
+				dispatcher.forward(request, response);
+			}
+			catch (SQLException | ServletException | IOException e)
+			{
+				MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+			}
 		}
-		return list;
 	}
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    HttpSession session = request.getSession();
-	    User user = (User) session.getAttribute("user");
-
-	    try {
-	        String handler = request.getParameter("admin");
-	        if (handler.equals("customerlist")) {
-	            List<User> userList = null;
-	            userList = fetchUserData(user);
-	            request.setAttribute("userList", userList);
-
-	            RequestDispatcher dispatcher = request.getRequestDispatcher("customerList.jsp");
-	            dispatcher.forward(request, response);
-	        }
-	    } catch (SQLException e) {
-	        MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
-	    }
-	}
-
 
 	private static long generateRandom12DigitNumber()
 	{

@@ -18,6 +18,9 @@ public class Database_Connectivity
 	public static Connection createDBConnection()
 	{
 
+		if(connection != null)
+			return connection;
+		
 		Properties properties = new Properties();
 		try
 		{

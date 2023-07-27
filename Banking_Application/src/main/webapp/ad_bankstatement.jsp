@@ -23,8 +23,8 @@ body {
 
 .logout-button {
 	position: absolute;
-	top: 8px;
-	right: 20px;
+	top: 25px;
+	right: 25px;
 	background-color: #4CAF50;
 	color: gray;
 	border: none;
@@ -38,9 +38,9 @@ body {
 }
 
 table {
-    width: 60%;
-    border-collapse: inherit;
-    margin: 20px auto; 
+	width: 60%;
+	border-collapse: inherit;
+	margin: 20px auto;
 }
 
 th, td {
@@ -63,6 +63,25 @@ p {
 	color: #888888;
 	margin-top: 50px;
 }
+
+.form-buttons {
+	top: 20px;
+	right: 20px;
+}
+
+.form-buttons button {
+	background-color: #4CAF50;
+	color: #ffffff;
+	padding: 8px 10px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	margin: 2px;
+}
+
+.form-buttons button:hover {
+	background-color: #45a049;
+}
 </style>
 </head>
 <body>
@@ -71,6 +90,9 @@ p {
 			<form action="loginServlet" method="get">
 				<input type="submit" name="logout" value="logout" />
 			</form>
+		</div>
+		<div class="form-buttons">
+			<button onclick="location.href='AdminServlet?admin=customerlist'">Back</button>
 		</div>
 		<c:if test="${empty tr_activity}">
 			<p>No transactions found.</p>

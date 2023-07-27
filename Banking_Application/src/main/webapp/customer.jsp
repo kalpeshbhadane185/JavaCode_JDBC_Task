@@ -121,8 +121,17 @@ body {
 				type="submit" value="Submit" name="transaction">
 		</form>
 		<c:if test="${not empty errorMessage}">
-			<p class="error-message">${errorMessage}</p>
+			<p class="error-message" id="errorMessage" style="color: green;">${errorMessage}</p>
+			<script>
+				setTimeout(function() {
+					var errorMessage = document.getElementById('errorMessage');
+					if (errorMessage) {
+						errorMessage.style.display = 'none';
+					}
+				}, 5000);
+			</script>
 		</c:if>
+
 	</div>
 </body>
 </html>

@@ -60,6 +60,42 @@ p {
 	color: #888888;
 	margin-top: 50px;
 }
+
+#deletePopup {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: scrollbar;
+	padding: 20px;
+	border: 1px solid #ccc;
+	box-shadow: 0 0 5px #888;
+	border-radius: 10px;
+}
+
+#deletePopup h3 {
+	margin-top: 0;
+}
+
+#deletePopup p {
+	margin-bottom: 10px;
+}
+
+#deletePopup div {
+	display: flex;
+	justify-content: flex-end;
+}
+
+#deletePopup button {
+	margin-left: 10px;
+	padding: 5px 10px;
+	border: none;
+	background-color: #4CAF50;
+	color: #fff;
+	border-radius: 4px;
+	cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -92,11 +128,9 @@ p {
 						<td>${customer.gender}</td>
 						<td>${customer.email}</td>
 						<td>
-							<form action="CustomerServlet" method="post">
-								<input type="hidden" name="operation" value="delete"> <input
-									type="hidden" name="userId" value="${customer.user_id}">
-								<button type="submit">Delete</button>
-							</form>
+							<button type="button"
+								onclick="confirmDelete(${customer.user_id}, 
+						 '${customer.username}')">Delete</button>
 						</td>
 						<td>
 							<form action="bankStatement" method="get">
@@ -108,13 +142,45 @@ p {
 					</tr>
 				</c:forEach>
 			</table>
-			<br>
-			<%
-			String errorMessage = (String) request.getAttribute("deleteMessage");
-			if (errorMessage != null) {
-			%>
-			<p id="deleteMessage" style="color: red;"><%=errorMessage%></p>
+
+			<div id="deletePopup">
+				<h3>Are you sure you want to delete this customer?</h3>
+				<p id="customerName"></p>
+				<div>
+					<button onclick="deleteCustomer()">Yes</button>
+					<button onclick="cancelDelete()">No</button>
+				</div>
+			</div>
 			<script>
+        var deletePopup = document.getElementById('deletePopup');
+        var customerName = document.getElementById('customerName');
+
+        function confirmDelete(userId, username) {
+            customerName.textContent =  username;
+            deletePopup.style.display = 'block';
+            document.getElementById('userId').value = userId;
+        }
+
+        function cancelDelete() {
+            deletePopup.style.display = 'none';
+        }
+
+        function deleteCustomer() {
+            document.getElementById('deleteForm').submit();
+        }
+    </script>
+			<form id="deleteForm" action="CustomerServlet" method="post">
+				<input type="hidden" name="operation" value="delete"> <input
+					type="hidden" name="userId" id="userId" value="">
+			</form>
+	</div>
+	<br>
+	<%
+	String errorMessage = (String) request.getAttribute("deleteMessage");
+	if (errorMessage != null) {
+	%>
+	<p id="deleteMessage" style="color: red;"><%=errorMessage%></p>
+	<script>
 				// Automatically hide the deleteMessage after 5 seconds (5000 milliseconds)
 				setTimeout(function() {
 					var deleteMessage = document
@@ -122,12 +188,30 @@ p {
 					if (deleteMessage) {
 						deleteMessage.style.display = 'none';
 					}
-				}, 3000);
+				}, 5000);
 			</script>
-			<%
+	<%
 }
 %>
-		</c:if>
+	<%
+	String notDeleteMessage = (String) request.getAttribute("notDeleteMessage");
+	if (notDeleteMessage != null) {
+	%>
+	<p id="notDeleteMessage" style="color: green;"><%=notDeleteMessage%></p>
+	<script>
+				// Automatically hide the deleteMessage after 5 seconds (5000 milliseconds)
+				setTimeout(function() {
+					var notDeleteMessage = document
+							.getElementById('notDeleteMessage');
+					if (notDeleteMessage) {
+						notDeleteMessage.style.display = 'none';
+					}
+				}, 5000);
+			</script>
+	<%
+}
+%>
+	</c:if>
 	</div>
 </body>
 </html>

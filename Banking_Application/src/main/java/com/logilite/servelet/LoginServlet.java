@@ -5,12 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,20 +18,21 @@ import org.apache.log4j.Level;
 
 import com.logilite.bean.Transaction_Activity;
 import com.logilite.bean.User;
+import com.logilite.dao.UserDAO;
 import com.logilite.dataBase.Database_Connectivity;
 import com.logilite.logger.MyLogger;
 
 @WebServlet("/loginServlet")
 public class LoginServlet extends HttpServlet
 {
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
+	private final UserDAO		userDAO				= new UserDAO();
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		User user = new User();
-		user = authenticated(username, password);
+		User user = userDAO.authenticated(username, password);
 
 		if (user != null)
 		{
@@ -54,40 +53,6 @@ public class LoginServlet extends HttpServlet
 		{
 			request.setAttribute("errorMessage", "Incorrect username or password.");
 			request.getRequestDispatcher("login.jsp").forward(request, response);
-		}
-	}
-
-	private User authenticated(String username, String password)
-	{
-		try
-		{
-			User user = new User();
-			Connection createDBConnection = Database_Connectivity.createDBConnection();
-			if (createDBConnection != null)
-			{
-				Statement statement = createDBConnection.createStatement();
-				String query = "select * from bank_user where username = '" + username + "' AND password = '" + password
-						+ "'";
-				ResultSet rs = statement.executeQuery(query);
-				while (rs.next())
-				{
-					user.setUser_id(rs.getInt("user_id"));
-					user.setUsername(rs.getString("username"));
-					user.setUser_type(rs.getString("user_type"));
-					user.setAccount_no(rs.getLong("account_no"));
-					user.setMob_no(rs.getLong("mobile_no"));
-					user.setEmail(rs.getString("email"));
-					user.setGender(rs.getString("gender"));
-					user.setParent_id(rs.getInt("parent_id"));
-					return user;
-				}
-			}
-			return null;
-		}
-		catch (Exception e)
-		{
-			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
-			return null;
 		}
 	}
 
@@ -126,13 +91,14 @@ public class LoginServlet extends HttpServlet
 			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
 		}
 	}
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        response.sendRedirect("login.jsp"); 
-    }
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		HttpSession session = request.getSession(false);
+		if (session != null)
+		{
+			session.invalidate();
+		}
+		response.sendRedirect("login.jsp");
+	}
 }

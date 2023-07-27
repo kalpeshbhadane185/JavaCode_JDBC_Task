@@ -1,18 +1,20 @@
 package com.logilite.bean;
 
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.List;
 
 public class Transaction_Activity
 {
 
-	public int transaction_id;
-	public Timestamp transaction_date;
-	public String transaction_type;
-	public double accountBalance;
-	public double ammount;
-	public int user_id;
+	private int transaction_id;
+	private Timestamp transaction_date;
+	private String transaction_type;
+	private double accountBalance;
+	private double ammount;
+	private int user_id;
+	
+	public Transaction_Activity()
+	{
+	}
 	
 	public int getTransaction_id()
 	{
@@ -54,6 +56,14 @@ public class Transaction_Activity
 	{
 		this.ammount = ammount;
 	}
+	public int getUser_id()
+	{
+		return user_id;
+	}
+	public void setUser_id(int user_id)
+	{
+		this.user_id = user_id;
+	}
 	@Override
 	public String toString()
 	{
@@ -61,10 +71,4 @@ public class Transaction_Activity
 				+ ", transaction_type=" + transaction_type + ", accountBalance=" + accountBalance + ", ammount="
 				+ ammount + ", user_id=" + user_id + "]";
 	}
-	public Transaction_Activity()
-	{
-		super();
-		// TODO Auto-generated constructor stub
-	}
-	
 }

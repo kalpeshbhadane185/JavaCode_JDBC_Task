@@ -118,8 +118,8 @@ function showDateRangeOption() {
         <input type="radio" name="transactionDetails" value="2" onclick="showDateRangeOption();" /> Current Quarter
         <input type="radio" name="transactionDetails" value="3" onclick="showDateRangeOption();" /> Custom Range
         <div id="dateRangeOption" style="display: none;">
-            From: <input type="date" name="fromDate" />
-            To: <input type="date" name="toDate" />
+            From: <input type="date" name="fromDate" value="fromDate"/>
+            To: <input type="date" name="toDate" value="toDate"/>
         </div>
         <input type="submit" value="View Statement" />
     </form>

@@ -2,22 +2,16 @@ package com.logilite.bean;
 
 public class User
 {
-	@Override
-	public String toString()
-	{
-		return "User [user_id=" + user_id + ", username=" + username + ", password=" + password + ", user_type="
-				+ user_type + ", account_no=" + account_no + ", email=" + email + ", mob_no=" + mob_no + ", gender="
-				+ gender + ", parent_id=" + parent_id + "]";
-	}
-	public int user_id;
-	public String username;
-	public String password;
-	public String user_type;
-	public Long account_no;
-	public String email;
-	public Long mob_no;
-	public String gender;
-	public int parent_id;
+	
+	private int user_id;
+	private String username;
+	private String password;
+	private String user_type;
+	private Long account_no;
+	private String email;
+	private Long mob_no;
+	private String gender;
+	private int parent_id;
 	
 	public int getUser_id()
 	{
@@ -90,5 +84,12 @@ public class User
 	public void setParent_id(int parent_id)
 	{
 		this.parent_id = parent_id;
+	}
+	@Override
+	public String toString()
+	{
+		return "User [user_id=" + user_id + ", username=" + username + ", password=" + password + ", user_type="
+				+ user_type + ", account_no=" + account_no + ", email=" + email + ", mob_no=" + mob_no + ", gender="
+				+ gender + ", parent_id=" + parent_id + "]";
 	}
 }
