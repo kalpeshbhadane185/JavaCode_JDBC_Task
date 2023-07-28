@@ -11,25 +11,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.logilite.bean.Transaction_Activity;
-import com.logilite.dao.TransactionStateDAO;
+import com.logilite.dao.Tr_StatementDAO;
+import com.logilite.stringconst.Constants;
 
 @WebServlet("/bankStatement")
 public class BankStatement extends HttpServlet
 {
 	private static final long				serialVersionUID		= 1L;
-	private final TransactionStateDAO	transactionStateDAO	= new TransactionStateDAO();
+	private  Tr_StatementDAO	transactionStateDAO	= new Tr_StatementDAO();
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-		List<Transaction_Activity> tr_activity = null;
-		String operation = request.getParameter("transactionDetails");
-		if (operation != null && operation.equals("statement"))
+		String operation = request.getParameter(Constants.TRANSACTIONDETAILS);
+		if (operation != null && operation.equals(Constants.STATEMENT))
 		{
 			String userId = request.getParameter("userId");
-			tr_activity = transactionStateDAO.fetchUserTransactionData(userId);
+			List<Transaction_Activity> tr_activity = transactionStateDAO.getUserTrData(userId);
+			request.setAttribute("tr_activity", tr_activity);
 		}
-		request.setAttribute("tr_activity", tr_activity);
 
 		RequestDispatcher dispatcher = request.getRequestDispatcher("ad_bankstatement.jsp");
 		dispatcher.forward(request, response);

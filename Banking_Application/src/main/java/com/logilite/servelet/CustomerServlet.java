@@ -15,26 +15,28 @@ import org.apache.log4j.Level;
 
 import com.logilite.bean.Transaction_Activity;
 import com.logilite.bean.User;
-import com.logilite.dao.TransactionActivityCust;
+import com.logilite.dao.TransactionActiviryDAO;
 import com.logilite.dao.UserDAO;
 import com.logilite.logger.MyLogger;
+import com.logilite.stringconst.Constants;
 
 @WebServlet("/CustomerServlet")
 public class CustomerServlet extends HttpServlet
 {
 	private static final long				serialVersionUID		= 1L;
-	private final TransactionActivityCust	transactionActivityCust	= new TransactionActivityCust();
+	private TransactionActiviryDAO	transactionActivityCust	= new TransactionActiviryDAO();
+	private UserDAO  userDAO = new UserDAO();
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		try
 		{
-			String handler = request.getParameter("transaction");
+			String handler = request.getParameter(Constants.TRANSACTION);
 
-			if (handler.equalsIgnoreCase("submit"))
+			if (handler.equalsIgnoreCase(Constants.SUBMIT))
 			{
 				HttpSession session = request.getSession();
-				User user = (User) session.getAttribute("user");
+				User user = (User) session.getAttribute(Constants.USER);
 				
 				if (user == null)
 				{
@@ -43,14 +45,13 @@ public class CustomerServlet extends HttpServlet
 					return;
 				}else {
 					
-					Transaction_Activity activity = (Transaction_Activity) session.getAttribute("tr_activity");
-					activity.setTransaction_type(request.getParameter("transaction_type"));
-					activity.setAmmount(Double.parseDouble(request.getParameter("amount")));
+					Transaction_Activity activity = (Transaction_Activity) session.getAttribute(Constants.TR_ACTIVTIY);
+					activity.setTransaction_type(request.getParameter(Constants.TRANSACTION_TYPE));
+					activity.setAmmount(Double.parseDouble(request.getParameter(Constants.AMOUNT)));
 
 					String insertTransactionActivity = transactionActivityCust.insertTransactionActivity(user,
 							activity);
-					request.setAttribute("errorMessage",
-							request.getParameter("transaction_type") + " " + insertTransactionActivity);
+					request.setAttribute("errorMessage", insertTransactionActivity);
 				}
 			}
 			LoginServlet.processCustomerPage(request, response);
@@ -66,23 +67,21 @@ public class CustomerServlet extends HttpServlet
 		try
 		{
 			HttpSession session = request.getSession();
-			String operation = request.getParameter("operation");
-			if (operation != null && operation.equals("delete"))
+			String operation = request.getParameter(Constants.OPERATION);
+			if (operation != null && operation.equals(Constants.DELETE))
 			{
 				String userId = request.getParameter("userId");
-				boolean deleteUserDataFromDatabase = transactionActivityCust.deleteUserDataFromDatabase(userId);
-				if (deleteUserDataFromDatabase)
+				if (userDAO.deleteUser(userId))
 				{
-					request.setAttribute("deleteMessage", "Customer Sucessfully Deleted");
+					request.setAttribute("deleteMessage", Constants.CUSTOMER_DELETED_SUCCESS);
 				}
 				else
 				{
-					request.setAttribute("notDeleteMessage",
-							"You can't delete this customer because his maintain " + "their account balance");
+					request.setAttribute("notDeleteMessage",Constants.NOTDELETED);
 				}
 			}
 
-			User user = (User) session.getAttribute("user");
+			User user = (User) session.getAttribute(Constants.USER);
 			UserDAO dao = new UserDAO();
 			List<User> userList = dao.fetchUserData(user);
 			request.setAttribute("userList", userList);

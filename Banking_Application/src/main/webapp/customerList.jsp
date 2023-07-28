@@ -179,7 +179,7 @@ p {
 	String errorMessage = (String) request.getAttribute("deleteMessage");
 	if (errorMessage != null) {
 	%>
-	<p id="deleteMessage" style="color: red;"><%=errorMessage%></p>
+	<p id="deleteMessage" style="color: green;"><%=errorMessage%></p>
 	<script>
 				// Automatically hide the deleteMessage after 5 seconds (5000 milliseconds)
 				setTimeout(function() {
@@ -197,7 +197,7 @@ p {
 	String notDeleteMessage = (String) request.getAttribute("notDeleteMessage");
 	if (notDeleteMessage != null) {
 	%>
-	<p id="notDeleteMessage" style="color: green;"><%=notDeleteMessage%></p>
+	<p id="notDeleteMessage" style="color: red;"><%=notDeleteMessage%></p>
 	<script>
 				// Automatically hide the deleteMessage after 5 seconds (5000 milliseconds)
 				setTimeout(function() {

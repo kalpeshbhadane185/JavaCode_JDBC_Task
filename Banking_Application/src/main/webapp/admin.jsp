@@ -56,8 +56,8 @@ body {
 	cursor: pointer;
 	margin: 5px;
 }
-.form-buttons-s form input[type="submit"] {
 
+.form-buttons-s form input[type="submit"] {
 	float: right;
 	margin-top: 10px;
 	background-color: #4CAF50;
@@ -65,7 +65,6 @@ body {
 	padding: 4px 8px;
 	border-radius: 4px;
 	cursor: pointer;
-
 	color: #ffffff;
 	cursor: pointer;
 	margin: 0px;
@@ -168,10 +167,10 @@ body {
 		<div class="container">
 			<h2>Welcome ${user.username}</h2>
 			<div class="form-buttons-s">
-			<form action="loginServlet" method="get">
-				<input type="submit" name="logout" value="logout" />
-			</form>
-		</div>
+				<form action="loginServlet" method="get">
+					<input type="submit" name="logout" value="logout" />
+				</form>
+			</div>
 		</div>
 	</div>
 	<div class="container">
@@ -188,13 +187,14 @@ body {
 					name="username" required /><br /> <br /> <label for="pass">Password:</label>
 				<input type="password" id="pass" name="password" required /><br />
 				<br /> <label for="mobno">Mobile Number:</label> <input type="text"
-					id="mobno" name="mobileno" pattern="[0-9]{10}" required /> <br />
+					id="mobno" name="mobile_no" pattern="[0-9]{10}" required /> <br />
 				<br /> <label for="gender">Gender:</label> <input type="radio"
 					id="gender" name="gender" value="Male" required /> Male <input
 					type="radio" id="gender" name="gender" value="Female" required />
 				Female<br /> <br /> <label for="email">Email:</label> <input
-					type="email" id="email" name="email" required /><br /> <br /> <label
-					for="userType">User Type:</label> <select id="userType"
+					type="email" id="email" name="email" required
+					pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" /><br /> <br />
+				<label for="userType">User Type:</label> <select id="userType"
 					name="userType" required onchange="toggleAccountNoField()">
 					<option value="Customer">Customer</option>
 					<option value="Admin">Admin</option>

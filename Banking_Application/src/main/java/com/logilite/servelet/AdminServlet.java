@@ -1,11 +1,7 @@
 package com.logilite.servelet;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -21,8 +17,8 @@ import org.apache.log4j.Level;
 
 import com.logilite.bean.User;
 import com.logilite.dao.UserDAO;
-import com.logilite.dataBase.Database_Connectivity;
 import com.logilite.logger.MyLogger;
+import com.logilite.stringconst.Constants;
 
 @WebServlet("/AdminServlet")
 public class AdminServlet extends HttpServlet
@@ -33,49 +29,41 @@ public class AdminServlet extends HttpServlet
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		HttpSession httpSession = request.getSession();
-		User user = (User) httpSession.getAttribute("user");
-		
-		String handler = request.getParameter("admin");
-		if (handler != null)
-		{
-			if (handler.equals("Register"))
-			{
-				user.setUsername(request.getParameter("username"));
-				user.setPassword(request.getParameter("password"));
-
-				user.setMob_no(Long.parseLong(request.getParameter("mobileno")));
-
-				user.setGender(request.getParameter("gender"));
-				user.setEmail(request.getParameter("email"));
-				user.setUser_type(request.getParameter("userType"));
-				user.setAccount_no(generateRandom12DigitNumber());
-
-				boolean registrationSuccess = userDAO.registerUser(user);
-				if (registrationSuccess)
-				{
-					response.sendRedirect("admin.jsp");
-					System.out.println("Success");
-				}
-				else
-				{
-					MyLogger.logger.info("please check query");
-				}
-			}
+		User adminUser = (User) httpSession.getAttribute(Constants.USER);
+		User user = new User();
+		user.setUsername(request.getParameter(Constants.USERNAME));
+		user.setPassword(request.getParameter(Constants.PASSWORD));
+		user.setMob_no(Long.parseLong(request.getParameter(Constants.MOBILE_NO)));
+		user.setGender(request.getParameter(Constants.GENDER));
+		user.setEmail(request.getParameter(Constants.EMAIL));
+		user.setUser_type(request.getParameter(Constants.USERTYPE));
+		if (!request.getParameter(Constants.USERTYPE).equalsIgnoreCase(Constants.ADMIN)) {
+			user.setAccount_no(generateRandom12DigitNumber());
 		}
+
+		if (userDAO.registerUser(user, adminUser.getUser_id()))
+		{
+			response.sendRedirect("admin.jsp");
+			System.out.println("Success");
+		}
+		else
+		{
+			response.sendRedirect("login.jsp");
+			MyLogger.logger.info("Something wrong please check query");
+		}
+
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 	{
 		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
+		User user = (User) session.getAttribute(Constants.USER);
 
-		String handler = request.getParameter("admin");
-		if (handler.equals("customerlist"))
+		if (request.getParameter(Constants.ADMIN).equalsIgnoreCase(Constants.CUSTOMERLIST))
 		{
-			List<User> userList;
 			try
 			{
-				userList = userDAO.fetchUserData(user);
+				List<User> userList = userDAO.fetchUserData(user);
 				request.setAttribute("userList", userList);
 				RequestDispatcher dispatcher = request.getRequestDispatcher("customerList.jsp");
 				dispatcher.forward(request, response);

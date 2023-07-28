@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,17 +12,21 @@ import org.apache.log4j.Level;
 import com.logilite.bean.User;
 import com.logilite.dataBase.Database_Connectivity;
 import com.logilite.logger.MyLogger;
+import com.logilite.stringconst.Constants;
+import com.logilite.stringconst.SQLQueries;
 
 public class UserDAO
 {
+	Connection			connection	= null;
+	PreparedStatement	pStatement	= null;
 
-	public boolean registerUser(User user)
+	public boolean registerUser(User user, int parent_id)
 	{
-		String query = "INSERT INTO bank_user (username, password, user_type, account_no, email, mobile_no, gender, parent_id) VALUES(?,?,?,?,?,?,?,?);";
-		Connection cn = Database_Connectivity.createDBConnection();
+		String query = SQLQueries.INSERT_USER_DETAILS;
+		connection = Database_Connectivity.createDBConnection();
 		try
 		{
-			PreparedStatement pStatement = cn.prepareStatement(query);
+			pStatement = connection.prepareStatement(query);
 			pStatement.setString(1, user.getUsername());
 			pStatement.setString(2, user.getPassword());
 			pStatement.setString(3, user.getUser_type());
@@ -31,38 +34,61 @@ public class UserDAO
 			pStatement.setString(5, user.getEmail());
 			pStatement.setLong(6, user.getMob_no());
 			pStatement.setString(7, user.getGender());
-			pStatement.setInt(8, user.getUser_id());
+			pStatement.setInt(8, parent_id);
 
 			int executeUpdate = pStatement.executeUpdate();
 
-			return executeUpdate != 0;
+			if (executeUpdate != 0)
+			{
+				return true;
+			}
+			return false;
 		}
 		catch (SQLException e)
 		{
-			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+			MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
 			return false;
+		}
+		finally
+		{
+			closeConnection();
 		}
 	}
 
 	public List<User> fetchUserData(User user) throws SQLException
 	{
 		List<User> list = new ArrayList<>();
-		String query = "select * from bank_user where parent_id=" + user.getUser_id() + ";";
-		Connection connection = Database_Connectivity.createDBConnection();
-		PreparedStatement prepareStatement = connection.prepareStatement(query);
-		ResultSet rs = prepareStatement.executeQuery();
-		while (rs.next())
+		String query = "select * from bank_user where parent_id=? and  user_type='Customer'";
+		try
 		{
-			User userData = new User();
-			userData.setUser_id(rs.getInt("user_id"));
-			userData.setUsername(rs.getString("username"));
-			userData.setAccount_no(rs.getLong("account_no"));
-			userData.setMob_no(rs.getLong("mobile_no"));
-			userData.setGender(rs.getString("gender"));
-			userData.setEmail(rs.getString("email"));
-			list.add(userData);
+			connection = Database_Connectivity.createDBConnection();
+			pStatement = connection.prepareStatement(query);
+			pStatement.setInt(1, user.getUser_id());
+
+			ResultSet rs = pStatement.executeQuery();
+			while (rs.next())
+			{
+				User userData = new User();
+				userData.setUser_id(rs.getInt(Constants.USER_ID));
+				userData.setUsername(rs.getString(Constants.USERNAME));
+				userData.setAccount_no(rs.getLong(Constants.ACCOUNT_NO));
+				userData.setMob_no(rs.getLong(Constants.MOBILE_NO));
+				userData.setGender(rs.getString(Constants.GENDER));
+				userData.setEmail(rs.getString(Constants.EMAIL));
+				list.add(userData);
+			}
+			rs.close();
+			return list;
 		}
-		return list;
+		catch (SQLException e)
+		{
+			MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
+			return null;
+		}
+		finally
+		{
+			closeConnection();
+		}
 	}
 
 	public User authenticated(String username, String password)
@@ -70,33 +96,97 @@ public class UserDAO
 		try
 		{
 			User user = new User();
-			Connection createDBConnection = Database_Connectivity.createDBConnection();
-			if (createDBConnection != null)
+			String query = SQLQueries.USER_AUTHENTICATE;
+			connection = Database_Connectivity.createDBConnection();
+			pStatement = connection.prepareStatement(query);
+			pStatement.setString(1, username);
+			pStatement.setString(2, password);
+			ResultSet rs = pStatement.executeQuery();
+			while (rs.next())
 			{
-				String query = "select * from bank_user where username = ? AND password = ?";
-				PreparedStatement preparedStatement = createDBConnection.prepareStatement(query);
-				preparedStatement.setString(1, username);
-				preparedStatement.setString(2, password);
-				ResultSet rs = preparedStatement.executeQuery();
-				while (rs.next())
-				{
-					user.setUser_id(rs.getInt("user_id"));
-					user.setUsername(rs.getString("username"));
-					user.setUser_type(rs.getString("user_type"));
-					user.setAccount_no(rs.getLong("account_no"));
-					user.setMob_no(rs.getLong("mobile_no"));
-					user.setEmail(rs.getString("email"));
-					user.setGender(rs.getString("gender"));
-					user.setParent_id(rs.getInt("parent_id"));
-					return user;
-				}
+				user.setUser_id(rs.getInt(Constants.USER_ID));
+				user.setUsername(rs.getString(Constants.USERNAME));
+				user.setUser_type(rs.getString(Constants.USER_TYPE));
+				user.setAccount_no(rs.getLong(Constants.ACCOUNT_NO));
+				user.setMob_no(rs.getLong(Constants.MOBILE_NO));
+				user.setEmail(rs.getString(Constants.EMAIL));
+				user.setGender(rs.getString(Constants.GENDER));
+				user.setParent_id(rs.getInt(Constants.PARENT_ID));
+				return user;
 			}
+			rs.close();
 			return null;
 		}
 		catch (SQLException e)
 		{
-			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+			MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
 			return null;
+		}
+		finally
+		{
+			closeConnection();
+		}
+	}
+
+	public boolean deleteUser(String userId)
+	{
+		double accountBalance = 0;
+		String selectQuery = SQLQueries.SELECT_ACCOUNT_BALANCE_BY_USER_ID;
+		try
+		{
+			connection = Database_Connectivity.createDBConnection();
+			pStatement = connection.prepareStatement(selectQuery);
+			pStatement.setInt(1, Integer.parseInt(userId));
+			ResultSet resultSet = pStatement.executeQuery();
+			if (resultSet.next())
+			{
+				accountBalance = resultSet.getDouble(Constants.ACCOUNT_BALANCE);
+			}
+			resultSet.close();
+
+			if (accountBalance < 600.0)
+			{
+				String deleteQuery = SQLQueries.DELETE_USER_BY_USER_ID;
+				PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
+				deleteStatement.setInt(1, Integer.parseInt(userId));
+				deleteStatement.executeUpdate();
+				MyLogger.logger.info(Constants.CUSTOMER_DELETED_SUCCESS);
+				deleteStatement.close();
+				pStatement.close();
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		} // type code
+		catch (SQLException e)
+		{
+			MyLogger.logger.log(Level.ERROR, "SQLException :: Please Check Query", e);
+		}
+		finally
+		{
+			closeConnection();
+		}
+		return false;
+	}
+
+	public void closeConnection()
+	{
+		try
+		{
+			if (connection != null)
+			{
+				connection.close();
+			}
+			if (pStatement != null)
+			{
+				pStatement.close();
+			}
+		}
+		catch (SQLException e)
+		{
+			MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
 		}
 	}
 }

@@ -10,40 +10,38 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 
 import com.logilite.logger.MyLogger;
+import com.logilite.stringconst.Constants;
 
 public class Database_Connectivity
 {
-	public static Connection connection;
-
 	public static Connection createDBConnection()
 	{
-
-		if(connection != null)
-			return connection;
-		
+		Connection connection = null;
 		Properties properties = new Properties();
 		try
 		{
-			properties.load(new FileInputStream(
-					System.getProperty("user.home") + System.getProperty("file.separator") + "config.properties"));
-
+			 properties.load(new FileInputStream(
+			 System.getProperty("user.dir") +
+			 System.getProperty("file.separator") + "config.properties"));
+//			properties.load(new FileInputStream("/home/kalpesh/git/repository/Banking_Application/config.properties"));
 		}
 		catch (IOException e)
 		{
 			MyLogger.logger.log(Level.ERROR, "IOException :: ", e);
 		}
-		String url = properties.getProperty("url");
-		String username = properties.getProperty("username");
-		String password = properties.getProperty("password");
+		String url = "jdbc:postgresql://localhost:" + properties.getProperty("db_port") + "/postgres";
+		String username = properties.getProperty("db_username");
+		String password = properties.getProperty("db_password");
 		try
 		{
-			Class.forName("org.postgresql.Driver");
+			Class.forName(Constants.DB_DRIVER);
 			connection = DriverManager.getConnection(url, username, password);
 			return connection;
 		}
 		catch (ClassNotFoundException | SQLException e)
 		{
-			e.printStackTrace();
+			MyLogger.logger.log(Level.ERROR, "Please Check DB Connection\n ClassNotFoundException | SQLException :: ",
+					e);
 			return null;
 		}
 	}

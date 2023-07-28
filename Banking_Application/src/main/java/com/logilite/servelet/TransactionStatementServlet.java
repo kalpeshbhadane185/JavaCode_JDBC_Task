@@ -21,26 +21,24 @@ import org.apache.log4j.Level;
 
 import com.logilite.bean.Transaction_Activity;
 import com.logilite.bean.User;
-import com.logilite.dao.TransactionStateDAO;
+import com.logilite.dao.Tr_StatementDAO;
+import com.logilite.dao.TransactionActiviryDAO;
 import com.logilite.dataBase.Database_Connectivity;
 import com.logilite.logger.MyLogger;
+import com.logilite.stringconst.Constants;
 
 @WebServlet("/TransactionServlet")
 public class TransactionStatementServlet extends HttpServlet
 {
 	private static final long			serialVersionUID	= 1L;
-
-	public String						fromDate			= null;
-	public String						toDate				= null;
-
-	private final TransactionStateDAO	transactionStateDAO	= new TransactionStateDAO();
+	private Tr_StatementDAO	transactionStateDAO	= new Tr_StatementDAO();
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
-		String buttonName = request.getParameter("transactionDetails");
+		User user = (User) session.getAttribute(Constants.USER);
+		String buttonName = request.getParameter(Constants.TRANSACTIONDETAILS);
 		try
 		{
 			List<Transaction_Activity> activity = null;
@@ -48,11 +46,11 @@ public class TransactionStatementServlet extends HttpServlet
 			{
 				String fromDate = request.getParameter("fromDate");
 				String toDate = request.getParameter("toDate");
-				activity = transactionStateDAO.fetchUserDataFromDatabase(user, buttonName, fromDate, toDate);
+				activity = transactionStateDAO.fetchUserTransactionData(user, buttonName, fromDate, toDate);
 			}
 			else
 			{
-				activity = transactionStateDAO.fetchUserDataFromDatabase(user, buttonName, null, null);
+				activity = transactionStateDAO.fetchUserTransactionData(user, buttonName, null, null);
 			}
 			request.setAttribute("activity", activity);
 			RequestDispatcher dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");
@@ -67,14 +65,5 @@ public class TransactionStatementServlet extends HttpServlet
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-		String buttonName = request.getParameter("transaction");
-		User user = (User) request.getSession().getAttribute("user");
-		String transactionType = request.getParameter("transaction_type");
-		double amount = Double.parseDouble(request.getParameter("amount"));
-
-		if (buttonName.equalsIgnoreCase("submit"))
-		{
-			transactionStateDAO.insertTransactionActivity(user, transactionType, amount);
-		}
 	}
 }

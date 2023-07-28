@@ -95,9 +95,19 @@ th {
 <script>
 function showDateRangeOption() {
     var transactionDetails = document.querySelector('input[name="transactionDetails"]:checked').value;
-    var dateRangeOption = document.getElementById('dateRangeOption');
-    dateRangeOption.style.display = transactionDetails === '3' ? 'block' : 'none';
-}
+    var dateRangeOption = document.getElementById('dateRangeOption');var fromDateInput = document.querySelector('input[name="fromDate"]');
+    var toDateInput = document.querySelector('input[name="toDate"]');
+
+    if (transactionDetails === '3') {
+        dateRangeOption.style.display = 'block';
+        fromDateInput.setAttribute('required', 'true');
+        toDateInput.setAttribute('required', 'true');
+    } else {
+        dateRangeOption.style.display = 'none';
+        fromDateInput.removeAttribute('required');
+        toDateInput.removeAttribute('required');
+    }
+ }
 </script>
 </head>
 <body>
@@ -118,8 +128,8 @@ function showDateRangeOption() {
         <input type="radio" name="transactionDetails" value="2" onclick="showDateRangeOption();" /> Current Quarter
         <input type="radio" name="transactionDetails" value="3" onclick="showDateRangeOption();" /> Custom Range
         <div id="dateRangeOption" style="display: none;">
-            From: <input type="date" name="fromDate" value="fromDate"/>
-            To: <input type="date" name="toDate" value="toDate"/>
+            From: <input type="date" name="fromDate" value="fromDate" />
+            To: <input type="date" name="toDate" value="toDate" />
         </div>
         <input type="submit" value="View Statement" />
     </form>

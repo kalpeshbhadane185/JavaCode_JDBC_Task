@@ -21,6 +21,8 @@ import com.logilite.bean.User;
 import com.logilite.dao.UserDAO;
 import com.logilite.dataBase.Database_Connectivity;
 import com.logilite.logger.MyLogger;
+import com.logilite.stringconst.Constants;
+import com.logilite.stringconst.SQLQueries;
 
 @WebServlet("/loginServlet")
 public class LoginServlet extends HttpServlet
@@ -30,8 +32,16 @@ public class LoginServlet extends HttpServlet
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
+		String username = request.getParameter(Constants.USERNAME);
+		String password = request.getParameter(Constants.PASSWORD);
+		
+		String projectPath = System.getProperty("user.dir");
+        System.out.println("Eclipse Project Path: " + projectPath);
+        
+        projectPath = System.getProperty("user.dir");
+        System.out.println("Eclipse Project Path: " + projectPath);
+        
+        
 		User user = userDAO.authenticated(username, password);
 
 		if (user != null)
@@ -40,7 +50,7 @@ public class LoginServlet extends HttpServlet
 			session.setAttribute("user", user);
 			System.out.println(user.getUser_type());
 
-			if (user.getUser_type().equalsIgnoreCase("Admin"))
+			if (user.getUser_type().equalsIgnoreCase(Constants.ADMIN))
 			{
 				response.sendRedirect("admin.jsp");
 			}
@@ -51,7 +61,7 @@ public class LoginServlet extends HttpServlet
 		}
 		else
 		{
-			request.setAttribute("errorMessage", "Incorrect username or password.");
+			request.setAttribute("errorMessage", Constants.INCORRECT_USERNAME_PASSWORD);
 			request.getRequestDispatcher("login.jsp").forward(request, response);
 		}
 	}
@@ -59,21 +69,22 @@ public class LoginServlet extends HttpServlet
 	public static void processCustomerPage(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException
 	{
+		Connection connection = Database_Connectivity.createDBConnection();
+		PreparedStatement pStatement = null;
 		try
 		{
 			Transaction_Activity activity = new Transaction_Activity();
 			HttpSession session = request.getSession();
-			User customer = (User) session.getAttribute("user");
+			User customer = (User) session.getAttribute(Constants.USER);
 
-			Connection createDBConnection = Database_Connectivity.createDBConnection();
-			String query = "select * from bank_user b join tr_activity t on t.user_id = b.user_id "
-					+ "where t.user_id = " + customer.getUser_id() + " order by  tr_date desc";
-			PreparedStatement statement = createDBConnection.prepareStatement(query);
+			String query = SQLQueries.USER_ACCOUNT_BALANCE;
+			pStatement = connection.prepareStatement(query);
+			pStatement.setInt(1, customer.getUser_id());
 
-			ResultSet rs = statement.executeQuery();
+			ResultSet rs = pStatement.executeQuery();
 			if (rs.next())
 			{
-				activity.setAccountBalance(rs.getDouble("account_balance"));
+				activity.setAccountBalance(rs.getDouble(Constants.ACCOUNT_BALANCE));
 			}
 			session.setAttribute("tr_activity", activity);
 			request.setAttribute("username", customer.getUsername());
@@ -89,6 +100,24 @@ public class LoginServlet extends HttpServlet
 		catch (SQLException e)
 		{
 			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+		}
+		finally
+		{
+			try
+			{
+				if (connection != null)
+				{
+					connection.close();
+				}
+				if (pStatement != null)
+				{
+					pStatement.close();
+				}
+			}
+			catch (SQLException e)
+			{
+				MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
+			}
 		}
 	}
 
