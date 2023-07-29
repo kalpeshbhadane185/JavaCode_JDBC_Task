@@ -23,32 +23,32 @@ import com.logilite.stringconst.SQLQueries;
 
 public class Tr_StatementDAO
 {
-	Connection			connection	= null;
-	PreparedStatement	pStatement	= null;
+	private Connection			connection	= null;
+	private PreparedStatement	pStatement	= null;
 
-	public List<Transaction_Activity> fetchUserTransactionData(User user, String buttonName, String fromDate,
+	public List<Transaction_Activity> fetchUserTransactionData(User user, String hanlderName, String fromDate,
 			String toDate)
 	{
 		List<Transaction_Activity> list = new ArrayList<>();
 		try
 		{
 			String query = null;
-			if (buttonName.equalsIgnoreCase("1"))
+			if (hanlderName.equalsIgnoreCase(Constants.CURRENTMONTH))
 			{
 				query = SQLQueries.TR_ACTIVITY_BY_MONTH;
 			}
-			else if (buttonName.equalsIgnoreCase("2"))
+			else if (hanlderName.equalsIgnoreCase(Constants.CURRENTQUARTER))
 			{
 				query = SQLQueries.TR_ACTIVITY_BY_QUARTER;
 			}
-			else if (buttonName.equalsIgnoreCase("3"))
+			else if (hanlderName.equalsIgnoreCase(Constants.CUSTOMRANGE))
 			{
 				query = SQLQueries.TR_ACTIVITY_BY_DATE_RANGE;
 			}
 			connection = Database_Connectivity.createDBConnection();
 			pStatement = connection.prepareStatement(query);
 			pStatement.setInt(1, user.getUser_id());
-			if (buttonName.equalsIgnoreCase("3"))
+			if (hanlderName.equalsIgnoreCase(Constants.CUSTOMRANGE))
 			{
 				try
 				{
@@ -128,8 +128,9 @@ public class Tr_StatementDAO
 			closeConnection();
 		}
 	}
-	
-	public void closeConnection() {
+
+	private void closeConnection()
+	{
 		try
 		{
 			if (connection != null)

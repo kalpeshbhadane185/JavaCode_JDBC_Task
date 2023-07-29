@@ -20,10 +20,10 @@ public class Database_Connectivity
 		Properties properties = new Properties();
 		try
 		{
-			 properties.load(new FileInputStream(
-			 System.getProperty("user.dir") +
-			 System.getProperty("file.separator") + "config.properties"));
-//			properties.load(new FileInputStream("/home/kalpesh/git/repository/Banking_Application/config.properties"));
+			properties.load(new FileInputStream(
+					System.getProperty("user.dir") + System.getProperty("file.separator") + "config.properties"));
+			// properties.load(new
+			// FileInputStream("/home/kalpesh/git/repository/Banking_Application/config.properties"));
 		}
 		catch (IOException e)
 		{

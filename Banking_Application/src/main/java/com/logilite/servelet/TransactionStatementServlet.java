@@ -30,27 +30,27 @@ import com.logilite.stringconst.Constants;
 @WebServlet("/TransactionServlet")
 public class TransactionStatementServlet extends HttpServlet
 {
-	private static final long			serialVersionUID	= 1L;
-	private Tr_StatementDAO	transactionStateDAO	= new Tr_StatementDAO();
+	private static final long	serialVersionUID	= 1L;
+	private Tr_StatementDAO		transactionStateDAO	= new Tr_StatementDAO();
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
 		HttpSession session = request.getSession();
 		User user = (User) session.getAttribute(Constants.USER);
-		String buttonName = request.getParameter(Constants.TRANSACTIONDETAILS);
+		String hanlderName = request.getParameter(Constants.TRANSACTIONDETAILS);
 		try
 		{
 			List<Transaction_Activity> activity = null;
-			if (buttonName.equalsIgnoreCase("3"))
+			if (hanlderName.equalsIgnoreCase(Constants.CUSTOMRANGE))
 			{
 				String fromDate = request.getParameter("fromDate");
 				String toDate = request.getParameter("toDate");
-				activity = transactionStateDAO.fetchUserTransactionData(user, buttonName, fromDate, toDate);
+				activity = transactionStateDAO.fetchUserTransactionData(user, hanlderName, fromDate, toDate);
 			}
 			else
 			{
-				activity = transactionStateDAO.fetchUserTransactionData(user, buttonName, null, null);
+				activity = transactionStateDAO.fetchUserTransactionData(user, hanlderName, null, null);
 			}
 			request.setAttribute("activity", activity);
 			RequestDispatcher dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");

@@ -98,7 +98,7 @@ function showDateRangeOption() {
     var dateRangeOption = document.getElementById('dateRangeOption');var fromDateInput = document.querySelector('input[name="fromDate"]');
     var toDateInput = document.querySelector('input[name="toDate"]');
 
-    if (transactionDetails === '3') {
+    if (transactionDetails === 'customRange') {
         dateRangeOption.style.display = 'block';
         fromDateInput.setAttribute('required', 'true');
         toDateInput.setAttribute('required', 'true');
@@ -124,9 +124,9 @@ function showDateRangeOption() {
 	
 	<div>
 	<form action="TransactionServlet" method="get">
-        <input type="radio" name="transactionDetails" value="1" onclick="showDateRangeOption();" checked/> Current Month
-        <input type="radio" name="transactionDetails" value="2" onclick="showDateRangeOption();" /> Current Quarter
-        <input type="radio" name="transactionDetails" value="3" onclick="showDateRangeOption();" /> Custom Range
+        <input type="radio" name="transactionDetails" value="currentMonth" onclick="showDateRangeOption();" checked/> Current Month
+        <input type="radio" name="transactionDetails" value="currentQuarter" onclick="showDateRangeOption();" /> Current Quarter
+        <input type="radio" name="transactionDetails" value="customRange" onclick="showDateRangeOption();" /> Custom Range
         <div id="dateRangeOption" style="display: none;">
             From: <input type="date" name="fromDate" value="fromDate" />
             To: <input type="date" name="toDate" value="toDate" />

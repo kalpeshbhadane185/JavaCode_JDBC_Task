@@ -46,9 +46,13 @@ public class Constants
 	public static final String	CUSTOMER_DELETED_SUCCESS	= "Customer deleted successfully";
 	public static final String	CREDIT_LIMIT				= "you can credit the maximum 200000 amount in your account and your credit amount is ";
 	public static final String	NOTDELETED					= "You can't delete this customer because his maintain their account balance";
-	public static final String	INCORRECT_USERNAME_PASSWORD		="Incorrect username or password.";
+	public static final String	INCORRECT_USERNAME_PASSWORD	= "Incorrect username or password.";
 
 	public static final String	STATEMENT					= "statement";
 	public static final String	TRANSACTIONDETAILS			= "transactionDetails";
+
+	public static final String	CURRENTMONTH				= "currentMonth";
+	public static final String	CURRENTQUARTER				= "currentQuarter";
+	public static final String	CUSTOMRANGE					= "customRange";
 
 }
