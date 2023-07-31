@@ -27,7 +27,7 @@ public class Tr_StatementDAO
 	private PreparedStatement	pStatement	= null;
 
 	public List<Transaction_Activity> fetchUserTransactionData(User user, String hanlderName, String fromDate,
-			String toDate)
+			String toDate, String userId)
 	{
 		List<Transaction_Activity> list = new ArrayList<>();
 		try
@@ -47,7 +47,14 @@ public class Tr_StatementDAO
 			}
 			connection = Database_Connectivity.createDBConnection();
 			pStatement = connection.prepareStatement(query);
-			pStatement.setInt(1, user.getUser_id());
+			if (userId != null)
+			{
+				pStatement.setInt(1, Integer.parseInt(userId));
+			}
+			else
+			{
+				pStatement.setInt(1, user.getUser_id());
+			}
 			if (hanlderName.equalsIgnoreCase(Constants.CUSTOMRANGE))
 			{
 				try
@@ -87,7 +94,7 @@ public class Tr_StatementDAO
 		}
 		catch (SQLException e)
 		{
-			MyLogger.logger.log(Level.ERROR, "Exception :: ", e);
+			MyLogger.logger.log(Level.ERROR, "Exception :: " + e.getMessage(), e);
 			return null;
 		}
 		finally
@@ -97,37 +104,22 @@ public class Tr_StatementDAO
 		return list;
 	}
 
-	public List<Transaction_Activity> getUserTrData(String userId)
-	{
-		try
-		{
-			List<Transaction_Activity> list = new ArrayList<>();
-			String query = SQLQueries.TR_ACTIVITY_BY_USER_ID;
-			connection = Database_Connectivity.createDBConnection();
-			pStatement = connection.prepareStatement(query);
-			pStatement.setInt(1, Integer.parseInt(userId));
-			ResultSet rs = pStatement.executeQuery();
-			while (rs.next())
-			{
-				Transaction_Activity activity = new Transaction_Activity();
-				activity.setTransaction_date(rs.getTimestamp(Constants.TR_DATE));
-				activity.setAmmount(rs.getDouble(Constants.AMOUNT));
-				activity.setTransaction_type(rs.getString(Constants.TR_TYPE));
-				list.add(activity);
-			}
-			rs.close();
-			return list;
-		}
-		catch (SQLException e)
-		{
-			MyLogger.logger.log(Level.ERROR, "SQLException :: ", e);
-			return null;
-		}
-		finally
-		{
-			closeConnection();
-		}
-	}
+	/*
+	 * public List<Transaction_Activity> getUserTrData(String userId) { try {
+	 * List<Transaction_Activity> list = new ArrayList<>(); String query =
+	 * SQLQueries.TR_ACTIVITY_BY_USER_ID; connection =
+	 * Database_Connectivity.createDBConnection(); pStatement =
+	 * connection.prepareStatement(query); pStatement.setInt(1,
+	 * Integer.parseInt(userId)); ResultSet rs = pStatement.executeQuery();
+	 * while (rs.next()) { Transaction_Activity activity = new
+	 * Transaction_Activity();
+	 * activity.setTransaction_date(rs.getTimestamp(Constants.TR_DATE));
+	 * activity.setAmmount(rs.getDouble(Constants.AMOUNT));
+	 * activity.setTransaction_type(rs.getString(Constants.TR_TYPE));
+	 * list.add(activity); } rs.close(); return list; } catch (SQLException e) {
+	 * MyLogger.logger.log(Level.ERROR, "SQLException :: ", e); return null; }
+	 * finally { closeConnection(); } }
+	 */
 
 	private void closeConnection()
 	{

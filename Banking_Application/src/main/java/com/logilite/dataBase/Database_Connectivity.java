@@ -2,6 +2,7 @@ package com.logilite.dataBase;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -22,8 +23,12 @@ public class Database_Connectivity
 		{
 			properties.load(new FileInputStream(
 					System.getProperty("user.dir") + System.getProperty("file.separator") + "config.properties"));
+			System.out.println(System.getProperty("user.dir"));
+			InputStream resourceAsStream = Database_Connectivity.class.getClassLoader()
+					.getResourceAsStream("config.properties");
 			// properties.load(new
 			// FileInputStream("/home/kalpesh/git/repository/Banking_Application/config.properties"));
+			System.out.println(resourceAsStream.toString());
 		}
 		catch (IOException e)
 		{
@@ -40,8 +45,8 @@ public class Database_Connectivity
 		}
 		catch (ClassNotFoundException | SQLException e)
 		{
-			MyLogger.logger.log(Level.ERROR, "Please Check DB Connection\n ClassNotFoundException | SQLException :: ",
-					e);
+			MyLogger.logger.log(Level.ERROR,
+					"Please Check DB Connection\n ClassNotFoundException | SQLException :: " + e.getMessage());
 			return null;
 		}
 	}

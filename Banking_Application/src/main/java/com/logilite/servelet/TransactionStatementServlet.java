@@ -39,6 +39,7 @@ public class TransactionStatementServlet extends HttpServlet
 		HttpSession session = request.getSession();
 		User user = (User) session.getAttribute(Constants.USER);
 		String hanlderName = request.getParameter(Constants.TRANSACTIONDETAILS);
+		String userId = request.getParameter("userId");
 		try
 		{
 			List<Transaction_Activity> activity = null;
@@ -46,14 +47,22 @@ public class TransactionStatementServlet extends HttpServlet
 			{
 				String fromDate = request.getParameter("fromDate");
 				String toDate = request.getParameter("toDate");
-				activity = transactionStateDAO.fetchUserTransactionData(user, hanlderName, fromDate, toDate);
+				activity = transactionStateDAO.fetchUserTransactionData(user, hanlderName, fromDate, toDate, userId);
 			}
 			else
 			{
-				activity = transactionStateDAO.fetchUserTransactionData(user, hanlderName, null, null);
+				activity = transactionStateDAO.fetchUserTransactionData(user, hanlderName, null, null, userId);
 			}
 			request.setAttribute("activity", activity);
-			RequestDispatcher dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");
+			RequestDispatcher dispatcher;
+			if (userId != null)
+			{
+				dispatcher = request.getRequestDispatcher("ad_bankstatement.jsp");
+			}
+			else
+			{
+				dispatcher = request.getRequestDispatcher("cu_bankstatement.jsp");
+			}
 			dispatcher.forward(request, response);
 		}
 		catch (Exception e)

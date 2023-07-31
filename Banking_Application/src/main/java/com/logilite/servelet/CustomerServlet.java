@@ -23,9 +23,9 @@ import com.logilite.stringconst.Constants;
 @WebServlet("/CustomerServlet")
 public class CustomerServlet extends HttpServlet
 {
-	private static final long				serialVersionUID		= 1L;
-	private TransactionActiviryDAO	transactionActivityCust	= new TransactionActiviryDAO();
-	private UserDAO  userDAO = new UserDAO();
+	private static final long		serialVersionUID	= 1L;
+	private TransactionActiviryDAO	trActivityCust		= new TransactionActiviryDAO();
+	private UserDAO					userDAO				= new UserDAO();
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
@@ -37,21 +37,20 @@ public class CustomerServlet extends HttpServlet
 			{
 				HttpSession session = request.getSession();
 				User user = (User) session.getAttribute(Constants.USER);
-				
+
 				if (user == null)
 				{
 					RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
 					dispatcher.forward(request, response);
 					return;
-				}else {
-					
+				}
+				else
+				{
 					Transaction_Activity activity = (Transaction_Activity) session.getAttribute(Constants.TR_ACTIVTIY);
 					activity.setTransaction_type(request.getParameter(Constants.TRANSACTION_TYPE));
 					activity.setAmmount(Double.parseDouble(request.getParameter(Constants.AMOUNT)));
 
-					String insertTransactionActivity = transactionActivityCust.insertTransactionActivity(user,
-							activity);
-					request.setAttribute("errorMessage", insertTransactionActivity);
+					request.setAttribute("errorMessage", trActivityCust.insertTransactionActivity(user, activity));
 				}
 			}
 			LoginServlet.processCustomerPage(request, response);
@@ -77,7 +76,7 @@ public class CustomerServlet extends HttpServlet
 				}
 				else
 				{
-					request.setAttribute("notDeleteMessage",Constants.NOTDELETED);
+					request.setAttribute("notDeleteMessage", Constants.NOTDELETED);
 				}
 			}
 

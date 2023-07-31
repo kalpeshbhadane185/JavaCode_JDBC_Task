@@ -99,6 +99,13 @@ p {
 </style>
 </head>
 <body>
+
+	<%-- <%
+	String userid = "${customer.user_id}";
+	%>
+	<%
+	session.setAttribute("userId", userid);
+	%> --%>
 	<div class="container">
 		<div class="back-button">
 			<input type="button" value="Back"
@@ -133,7 +140,12 @@ p {
 						 '${customer.username}')">Delete</button>
 						</td>
 						<td>
-							<form action="bankStatement" method="get">
+							<%-- 	<form action="bankStatement" method="get">
+								<input type="hidden" name="transactionDetails" value="statement">
+								<input type="hidden" name="userId" value="${customer.user_id}">
+								<button type="submit">BankStatement</button>
+							</form> --%>
+							<form action="ad_bankstatement.jsp">
 								<input type="hidden" name="transactionDetails" value="statement">
 								<input type="hidden" name="userId" value="${customer.user_id}">
 								<button type="submit">BankStatement</button>

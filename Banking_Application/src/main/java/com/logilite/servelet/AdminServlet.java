@@ -24,7 +24,7 @@ import com.logilite.stringconst.Constants;
 public class AdminServlet extends HttpServlet
 {
 	private static final long	serialVersionUID	= 1L;
-	private final UserDAO		userDAO				= new UserDAO();
+	private  UserDAO		userDAO				= new UserDAO();
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
